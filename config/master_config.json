@@ -1,0 +1,33 @@
+{
+    "api_url":"http://127.0.0.1:8000",
+    
+    "configs": {
+      "elements_config_path":"config//sections_config.json",
+      "data_sources": {
+        "description": "Data source configurations",
+        "items": [
+          {
+            "name": "Zillow Config",
+            "tag": "zillow_config",
+            "purpose": "Configuration for loading data from the Zillow website",
+            "comments": "Used for working with real estate data",
+            "path": "config/zillow_config.json"
+          }
+        ]
+      },
+      "features": {
+        "description": "Features configurations",
+        "items": [
+          {
+            "name": "Pipelines Config",
+            "tag": "pipeline_config",
+            "purpose": "Configuration for managing data pipelines",
+            "comments": "Used for setting up and running data pipelines",
+            "path": "config/pipeline_config.json"
+          }
+        ]
+      },
+      "configs_list": ["master_config.json","sections_config.json","zillow_config.json","pipeline_config.json","zillow_data_config.json"]
+    }
+  }
+  

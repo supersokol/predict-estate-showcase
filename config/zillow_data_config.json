@@ -1,0 +1,38 @@
+{
+    "zillow_data_config": {
+        "file_path": "data//zillow//zillow_datasets//zillow_datasets20250125-051342.json",
+        "metadata": {
+            "timestamps": {
+                "start": "20250125-051342",
+                "end": "20250125-052109",
+                "duration": 447.01348757743835,
+                "month": 1
+            },
+            "version": "0.1.0",
+            "save_to_json": true,
+            "save_to_json_path": "data//zillow",
+            "save_to_json_file": "zillow_datasets20250125-051342.json",
+            "fetch_status": "success",
+            "file_path": "data//zillow//zillow_datasets",
+            "analysis": {
+                "total_datasets": 8,
+                "total_files": 162,
+                "types_per_dataset": {
+                    "average": 3.25,
+                    "min": 1,
+                    "max": 6
+                },
+                "files_per_type": {
+                    "average": 6.230769230769231,
+                    "min": 1,
+                    "max": 37
+                },
+                "files_per_dataset": {
+                    "average": 20.25,
+                    "min": 2,
+                    "max": 43
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "sections": {
+        "Overview": "sections.overview",
+        "Pipelines": "sections.pipelines",
+        "Models": "sections.model_controller",
+        "Metaheuristics": "sections.metaheuristics_executor",
+        "Data": "sections.data",
+        "EDA": "sections.eda",
+        "API Integration": "sections.api_integration",
+        "Data Processing": "sections.data_processing",
+        "Local Store Management": "sections.local_store_management",
+        "Process Execution": "sections.process_execution",
+        "Source Management": "sections.source_management",
+        "Source Overview": "sections.source_overview"
+    }
+}

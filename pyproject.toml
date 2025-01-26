@@ -1,0 +1,9 @@
+```toml
+[project]
+name = "PredictEstateShowcase"
+version = "1.0.0"
+description = "An efficient Zillow dataset processor and manager."
+authors = [
+    { name = "Danylo Dvoichenkov", email = "supersokol777@gmail.com" }
+]
+license = "MIT"

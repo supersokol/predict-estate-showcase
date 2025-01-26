@@ -1,0 +1,185 @@
+{
+    "config_name": "zillow_config",
+    "description": "Configuration for loading data from the Zillow website",
+    "prefix": "zillow",
+    "zillow_base_url": "https://www.zillow.com/research/data/",
+    "update_frequency": "Monthly",
+    "last_updated": "24.01.2025",
+    "data_config_path": "config/zillow_data_config.json",
+    "data_path": "data//zillow//zillow_datasets",
+    "zillow_data_labels_available": [
+      "median-home-value-zillow-home-value-index-zhvi-",
+      "home-values-forecasts-",
+      "rentals-",
+      "rental-forecasts-",
+      "home-sales-listings-",
+      "list-sale-prices-",
+      "sales-",
+      "market-heat-index-",
+      "new-construction-",
+      "affordability-"
+    ],
+    "zillow_data_labels_target": [
+        "median-home-value-zillow-home-value-index-zhvi-",
+        "home-values-forecasts-",
+        "rentals-",
+        "rental-forecasts-",
+        "home-sales-listings-",
+        "list-sale-prices-",
+        "sales-",
+        "market-heat-index-",
+        "new-construction-",
+        "affordability-"
+      ],  
+    "save_to_json": true,
+    "save_to_json_path": "data//zillow//zillow_datasets",
+    "save_to_json_file": "zillow_datasets",
+    "geography_options": [["U.S."],["Metro & U.S.","Metro & US"], ["State"], ["Country"], ["City"], ["ZIP Code"], ["Neighborhood"]],
+    "datasets": {
+      "zillow_home_values": {
+        "type_pattern": "(Mortgage Payment|Total Monthly Payment|ZHVI)",
+        "data_type_pattern": "Time Series",
+        "housing_types": [
+          "All Homes", "Single-Family Homes", "Condo[\/]Co-op", "1-Bedroom",
+          "2-Bedroom", "3-Bedroom", "4-Bedroom", "5[+]-Bedroom"
+        ],
+        "feature_patterns": {
+          "down_payment": "(\\d+%) down",
+          "tier": "(Bottom Tier|Top Tier|Mid-Tier)",
+          "measure": [
+                {"key": "raw", "condition": "Raw"},
+                {"key": "smoothed, seasonally adjusted", "condition": "Smoothed.*Seasonally Adjusted"}
+            ]
+        }
+      },
+      "zillow_home_values_forecasts": {
+        "type_pattern": "(ZHVF)",
+        "data_type_pattern": "Forecast",
+        "housing_types": [
+          "All Homes"
+        ],
+        "feature_patterns": {
+          "tier": "(Mid-Tier)",
+          "measure": [
+                {"key": "raw", "condition": "Raw"},
+                {"key": "smoothed, seasonally adjusted", "condition": "Smoothed.*Seasonally Adjusted"}
+            ]
+        }
+      },
+      "zillow_rentals": {
+        "type_pattern": "(ZORI|ZORDI)",
+        "data_type_pattern": "Time Series",
+        "housing_types": [
+          "All Homes", "Single-Family", "Condo[\/]Co-op", "Multi-Family"
+        ],
+        "feature_patterns": {
+          "measure": [
+                {"key": "raw", "condition": "Raw"},
+                {"key": "smoothed, seasonally adjusted", "condition": "Smoothed.*Seasonally Adjusted"}
+            ]
+        }
+      },
+      "zillow_rental_forecasts": {
+        "type_pattern": "(ZORF)",
+        "housing_types": [
+          "Single Family Residence", "Multi Family Residence"
+        ],
+        "feature_patterns": {
+          "measure": [
+                {"key": "smoothed", "condition": "Smoothed"}
+            ]
+        }
+      },
+      "zillow_for-sale_listings": {
+        "type_pattern": "(For-Sale Inventory|New Listings|Newly Pending Listings|Median List Price)",
+        "housing_types": [
+          "All Homes", "SFR Only"
+        ],
+        "feature_patterns": {
+          "cadence": "(Monthly|Weekly)",
+          "measure": [
+                {"key": "raw", "condition": "Raw"},
+                {"key": "smoothed", "condition": "([Smooth]+\\w*)"}
+            ]
+        }
+      },
+      "zillow_sales": {
+        "type_pattern": "(Sales Count Nowcast|Sale Price|Total Transaction Value|Sale-to-List Ratio|Percent of Homes Sold)",
+        "housing_types": [
+          "All Homes", "SFR only"
+        ],
+        "feature_patterns": {
+          "cadence": "(Monthly|Weekly)",
+          "condition": [
+            {"key": "above_the_list", "condition": "Above"},
+            {"key": "below_the_list", "condition": "Below"}
+        ],
+          "measure": [
+                {"key": "raw", "condition": "Raw"},
+                {"key": "smoothed, seasonally adjusted", "condition": "Smoothed.*Seasonally Adjusted"},
+                {"key": "smoothed", "condition": "Smooth"}
+            ]
+        }
+      },
+      "zillow_days_on_market_and_price_cuts": {
+        "type_pattern": "(Days to Pending|Days to Close|Share of Listings With a Price Cut|Price Cut)",
+        "housing_types": [
+          "All Homes", "SFR only"
+        ],
+        "feature_patterns": {
+            "cadence": "(Monthly|Weekly)",
+            "value_type": "(Median|Mean)",
+          "measure": [
+                {"key": "raw", "condition": "Raw"},
+                {"key": "smoothed", "condition": "([Smooth]+\\w*)"}
+            ]
+        }
+      },
+      "zillow_market_heat_index": {
+        "type_pattern": "(Market Heat Index)",
+        "housing_types": [
+          "All Homes"
+        ],
+        "feature_patterns": {
+          "cadence": "Monthly"
+        }
+      },
+      "zillow_new_construction": {
+        "type_pattern": "(New Construction Sales Count|New Construction Median Sale Price|New Construction Median Sale Price Per Square Foot)",
+        "housing_types": [
+          "All Homes", "SFR only", "Condo/Co-op only"
+        ],
+        "feature_patterns": {
+          "cadence": "Monthly",
+          "measure": [
+                {"key": "raw", "condition": "Raw"}
+            ]
+        }
+      },
+      "zillow_affordability": {
+        "type_pattern": "(New Homeowner Income Needed|New Renter Income Needed|Affordable Home Price|Years to Save|New Homeowner Affordability|New Renter Affordability)",
+        "data_type_pattern": "Time Series",
+        "housing_types": [
+          "All Homes"
+        ],
+        "feature_patterns": {
+          "down_payment": "(\\d+%) down",
+          "measure": [
+                {"key": "smoothed, seasonally adjusted", "condition": "Smoothed.*Seasonally Adjusted"}
+            ]
+        }
+      }
+
+    },
+    "metadata_config" : {
+        "timestamps": [{"timestamp_name":"start","timestamp_type":"string"},
+                       {"timestamp_name":"end","timestamp_type":"string"},
+                       {"timestamp_name":"duration","timestamp_type":"string"},
+                       {"timestamp_name":"month","timestamp_type":"date"}],
+        "version": "0.1.0",
+        "save_to_json": true,
+        "save_to_json_path": "data//zillow",
+        "save_to_json_file": "zillow_datasets"
+        
+    }
+}

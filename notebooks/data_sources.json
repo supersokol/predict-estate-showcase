@@ -1,0 +1,10 @@
+{
+    "zillow_test": {
+        "description": "test config",
+        "local_files": {
+            "datasets": [],
+            "uploaded": []
+        },
+        "status": "pending"
+    }
+}

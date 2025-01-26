@@ -1,0 +1,25 @@
+{
+    "pipelines": {
+            "name": "example_pipeline",
+            "description": "An example pipeline with nested pipelines and processes.",
+            "max_iterations": 50,
+            "termination_condition": "accuracy > 0.9",
+            "steps": [
+                {"type": "process", "name": "Remove Duplicates"},
+                {"type": "process", "name": "Normalize Numeric Columns"},
+                {
+                    "type": "model",
+                    "action": "train",
+                    "name": "Linear Regression",
+                    "parameters": {
+                        "fit_intercept": true
+                    }
+                },
+                {
+                    "type": "pipeline",
+                    "name": "nested_pipeline"
+                }
+            ]
+        
+    }
+}

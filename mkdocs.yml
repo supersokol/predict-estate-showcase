@@ -1,0 +1,78 @@
+site_name: PredictEstate Showcase
+repo_url: https://github.com/supersokol/predict-estate-showcase
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+  palette:
+    primary: pink
+    accent: cyan
+  font:
+    text: "Roboto"
+    code: "Fira Code"
+
+  extra_css:
+  - css/extra.css
+
+plugins:
+  - search 
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true                       
+nav:
+  - Home: index.md
+  - All Modules: all_modules.md
+  - API Documentation:
+      - Overview: api/overview.md
+      - Full API: api/openapi.md
+  - Configurations:
+      - Overview: config/overview.md
+      - Zillow Config: config/zillow_config.md
+      - Zillow Data Config: config/zillow_data_config.md
+      - Master Config: config/master_config.md
+      - Pipeline Config: config/pipeline_config.md
+      - Sections Config: config/sections_config.md
+  - Modules:
+      - Overview: modules/overview.md
+      - Core:
+          - File Utils: modules/core/file_utils.md
+          - Logger: modules/core/logger.md
+      - Registry:
+          - Data Workflow: modules/registry/data_workflow.md
+          - Process Registry: modules/registry/process_registry.md
+      - Analysis:
+          - Base Analysis: modules/analysis/base_analysis.md
+          - Zillow Analysis: modules/analysis/zillow_analysis.md
+      - Interfaces:
+          - Streamlit UI: modules/interfaces/app.md
+          - Section Loader: modules/interfaces/section_loader.md
+          - Dashboard: modules/interfaces/streamlit_dashboard.md
+      - Metaheuristics:
+          - Genetic Algorithm Example: modules/metaheuristics/genetic_algorithm.md
+          - Simulated Annealing Example: modules/metaheuristics/simulated_annealing.md   
+      - Models:
+          - Regression Models: modules/models/regression_models.md
+          - Econometric Models: modules/models/econometric.md
+          - Genetic Algorithm Models: modules/models/genetic_algorithms.md
+      - Processes:
+          - Data Processing: modules/processes/data_processing.md
+          - EDA: modules/processes/basic_eda.md
+          - Model Training: modules/processes/model_training.md
+          - Model Evaluation: modules/processes/model_evaluation.md
+          - Model Prediction: modules/processes/model_prediction.md
+      - Integration:
+          - External API: modules/integration/external_api_calls.md
+  - Functions:
+      - Manage Data Processing: functions/manage_data_processing.md
+      - Check Config: functions/check_config.md
+  - Notebooks:
+      - Data Processing Demo: notebooks/data_processing_demo.md
+      - EDA Demo: notebooks/eda_demo.md
+      - Log Stats Demo: notebooks/log_statistics_analysis.md
+      - Process Registry Demo: notebooks/process_registry_demo.md
+  - Tests:
+      - Overview: tests/overview.md
+      - Test Examples: tests/test_examples.md
