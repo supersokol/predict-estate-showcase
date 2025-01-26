@@ -80,9 +80,18 @@ def healthcheck():
 # Define a data registry for managing data sources
 data_registry = data_source_registry
 
+# Record model for file metadata
 class FileRecord(BaseModel):
     """
-    Record model for obtaining file records
+    Represents a record for obtaining file metadata.
+
+    Attributes:
+        id (int): Unique identifier of the file record.
+        file_path (str): Path to the file.
+        file_type (str): Type of the file (e.g., "csv", "json").
+        format (str): Format or structure of the file (e.g., "tabular", "raw").
+        timestamp (str): Timestamp of when the file was processed or created.
+        metadata (dict): Additional metadata associated with the file.
     """
     id: int
     file_path: str
@@ -90,23 +99,44 @@ class FileRecord(BaseModel):
     format: str
     timestamp: str
     metadata: dict
-#######
+
 @app.put("/data_sources", response_model=dict)
 def update_registry():
-    """_summary_
+    """
+    Updates the data registry.
+
+    This endpoint triggers an update to the data registry, ensuring that
+    all data sources are synchronized with the current state.
 
     Returns:
-        _type_: _description_
+        dict: A success message indicating that the registry was updated.
+
+    Example:
+        ```python
+        response = client.put("/data_sources")
+        print(response.json())  # Output: {"message": "Registry updated successfully."}
+        ```
     """
     data_registry.update_registry()
     return {"message": "Registry updated successfully."}
 
 @app.get("/data_sources", response_model=list[FileRecord])
 def get_table():
-    """_summary_
+    """
+    Retrieves all file records from the data registry.
+
+    This endpoint returns a list of file records stored in the data registry.
+    Each record includes metadata such as file type, format, and associated metadata.
 
     Returns:
-        _type_: _description_
+        list[FileRecord]: A list of file records.
+
+    Example:
+        ```python
+        response = client.get("/data_sources")
+        print(response.json())  
+        # Output: [{"id": 1, "file_path": "data/file1.csv", ...}, ...]
+        ```
     """
     rows = data_registry.get_table()
     records = []
@@ -123,6 +153,22 @@ def get_table():
 
 # Helper functions for registry execution
 def get_registry_metadata(registry):
+    """
+    Extracts metadata for all items in the specified registry.
+
+    Args:
+        registry (dict): The registry containing items with metadata.
+
+    Returns:
+        list[dict]: A list of dictionaries with metadata information.
+
+    Example:
+        ```python
+        metadata = get_registry_metadata(process_registry.registry)
+        print(metadata)
+        # Output: [{"name": "Process1", "description": "Processes data", ...}, ...]
+        ```
+    """
     return [
         {
             "name": name,
@@ -132,29 +178,67 @@ def get_registry_metadata(registry):
         for name, meta in registry.items()
     ]
 
-# Endpoints for Processes
-# Input model for processes
+# Input model for processes:
 class ProcessInput(BaseModel):
+    """
+    Input model for executing a process.
+
+    Attributes:
+        parameters (dict): Dictionary of parameters required by the process.
+    """
     parameters: dict
+
+# Endpoints for Processes:
 
 @app.get("/processes", tags=["Processes"], summary="List all registered processes")
 async def list_processes():
     """
-    Returns a list of all processes registered in the system.
+    Lists all processes registered in the system.
+
     Processes are reusable functions designed for data manipulation or analysis.
-    Each process comes with detailed metadata, including a description, parameters, and expected outputs.
+    Each process is registered with detailed metadata, including a description,
+    required parameters, and expected outputs.
+
+    Returns:
+        list[str]: A list of process names registered in the system.
+
+    Example:
+        ```python
+        response = client.get("/processes")
+        print(response.json())  
+        # Output: ["Process1", "Process2", ...]
+        ```
     """
     return list(process_registry.keys())
 
 @app.post("/processes/{process_name}", tags=["Processes"], summary="Execute a process")
 async def execute_process(process_name: str, input_data: ProcessInput):
     """
-    Execute a registered process by its name.
-    Pass parameters specific to the process as input.
-    Example use cases:
+    Executes a registered process by its name.
+
+    This endpoint allows dynamic execution of a registered process by passing
+    the required parameters as input. Processes can perform operations such as:
     - Normalizing numeric columns.
     - Removing duplicates from a dataset.
     - Generating correlation matrices.
+
+    Args:
+        process_name (str): The name of the process to execute.
+        input_data (ProcessInput): Input parameters for the process.
+
+    Returns:
+        dict: A dictionary containing the execution status and result.
+
+    Raises:
+        HTTPException: If the process is not found or an error occurs during execution.
+
+    Example:
+        ```python
+        input_data = {"parameters": {"column": "price"}}
+        response = client.post("/processes/NormalizeColumns", json=input_data)
+        print(response.json())  
+        # Output: {"status": "success", "result": {...}}
+        ```
     """
     if process_name not in process_registry.registry:
         raise HTTPException(status_code=404, detail=f"Process {process_name} not found.")
@@ -165,11 +249,11 @@ async def execute_process(process_name: str, input_data: ProcessInput):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# Endpoints for Pipelines
-# Input model for pipelines
+# Input model for pipelines:
 class PipelineInput(BaseModel):
     data: dict
+    
+# Endpoints for Pipelines:
 
 @app.get("/pipelines", tags=["Pipelines"], summary="List all registered pipelines")
 async def list_pipelines():
@@ -194,7 +278,7 @@ async def execute_pipeline(pipeline_name: str, input_data: PipelineInput):
         raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")
     pipeline_config = pipeline_registry.registry[pipeline_name]
     try:
-        from core.pipeline_executor import PipelineExecutor
+        from registry.pipeline_registry import PipelineExecutor
         executor = PipelineExecutor(pipeline_config)
         result = executor.execute(input_data.data)
         return {"status": "success", "result": result}

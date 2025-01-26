@@ -296,8 +296,12 @@ def get_files_for_last_timestamps(directory, max_timestamps=3):
     return selected_files
 
 def load_data(file_path, file_type="csv", load_as="dataframe", encoding = "utf-8", label = None):
-    logger.info(f"Loading data from file: {file_path}, type: {file_type}, load_as: {load_as}, encoding: {encoding}")
+    abs_path = os.path.abspath(file_path)
+    logger.info(f"Loading data from file: {abs_path}, type: {file_type}, load_as: {load_as}, encoding: {encoding}")
     try:
+        if not os.path.exists(abs_path):
+            raise FileNotFoundError(f"File not found: {abs_path}")
+        file_path = abs_path
         if load_as == "dataframe":
             def load_data_as_dataframe(file_path, file_type):
                 if file_type == "csv":

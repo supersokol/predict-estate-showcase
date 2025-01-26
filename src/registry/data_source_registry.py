@@ -6,12 +6,36 @@ from typing import List, Dict, Optional
 from src.core.logger import logger
 
 class DataSourceRegistry:
+    """
+    Registry for managing data sources.
+
+    The `DataSourceRegistry` class provides functionality to initialize, manage,
+    and retrieve data source records from a SQLite database.
+
+    Attributes:
+        db_path (str): Path to the SQLite database file.
+    """
     def __init__(self, db_file="data_sources.db"):
+        """
+        Initialize the DataSourceRegistry and set up the database.
+
+        Args:
+            db_file (str, optional): Name of the SQLite database file. Defaults to "data_sources.db".
+
+        Example:
+            ```python
+            registry = DataSourceRegistry("my_data_sources.db")
+            ```
+        """
         self.db_path = os.getenv("DB_PATH") + db_file
         self._initialize_database()
 
     def _initialize_database(self):
-        """Create the table in the database upon initialization."""
+        """
+        Create the database table if it doesn't already exist.
+
+        This method ensures that the `data_sources` table is present in the database.
+        """
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("""
@@ -28,13 +52,20 @@ class DataSourceRegistry:
         conn.close()
 
     def _determine_file_type(self, file_path: str) -> str:
-        """Determine the file type based on the path and extension.
+        """
+        Determine the file type based on the path and extension.
 
         Args:
             file_path (str): The path to the file.
 
         Returns:
-            str: The determined file type.
+            str: The determined file type, e.g., "dataset", "config", or "uploaded".
+
+        Example:
+            ```python
+            file_type = registry._determine_file_type("data/sample.csv")
+            print(file_type)  # Output: "dataset"
+            ```
         """
         _, ext = os.path.splitext(file_path)
         ext = ext.lower()
@@ -52,13 +83,20 @@ class DataSourceRegistry:
             return "uploaded"
 
     def _get_file_metadata(self, file_path: str) -> Dict[str, str]:
-        """Get file metadata (e.g., size).
+        """
+        Get metadata for a file, such as size and last modified timestamp.
 
         Args:
-            file_path (str): The path to the file.
+            file_path (str): Path to the file.
 
         Returns:
-            Dict[str, str]: The metadata of the file.
+            dict: Metadata including size in bytes and last modified timestamp.
+
+        Example:
+            ```python
+            metadata = registry._get_file_metadata("data/sample.csv")
+            print(metadata)
+            ```
         """
         metadata = {
             "size_bytes": os.path.getsize(file_path),
@@ -67,7 +105,12 @@ class DataSourceRegistry:
         return metadata
 
     def update_registry(self):
-        """Update the database records based on the file structure."""
+        """
+        Update the database with files found in predefined directories.
+
+        This method scans `data` and `configs` directories, determines file types,
+        and updates the database with new or updated records.
+        """
         files_to_register = self._get_all_files()
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -94,10 +137,17 @@ class DataSourceRegistry:
         conn.close()
 
     def _get_all_files(self) -> List[str]:
-        """Collect paths to all files in the data and configs folders.
+        """
+        Collect all file paths in the `data` and `configs` directories.
 
         Returns:
-            List[str]: A list of file paths.
+            list: A list of file paths.
+
+        Example:
+            ```python
+            files = registry._get_all_files()
+            print(files)
+            ```
         """
         root_dirs = ["data", "configs"]
         supported_formats = {".csv", ".txt", ".md", ".pdf", ".json"}
@@ -112,10 +162,18 @@ class DataSourceRegistry:
         return files
 
     def get_table(self) -> List[tuple]:
-        """Get the table of all files from the database.
+        """
+        Retrieve all records from the `data_sources` table.
 
         Returns:
-            List[tuple]: A list of tuples representing the rows in the table.
+            list[tuple]: A list of tuples representing rows in the table.
+
+        Example:
+            ```python
+            table = registry.get_table()
+            for row in table:
+                print(row)
+            ```
         """
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -129,7 +187,17 @@ class DataSourceRegistry:
         return rows
 
     def display_table(self):
-        """Display the table in a readable format."""
+        """
+        Display the `data_sources` table in a readable format.
+
+        Returns:
+            str: A formatted string of table data.
+
+        Example:
+            ```python
+            print(registry.display_table())
+            ```
+        """
         rows = self.get_table()
         if not rows:
             logger.warning("The table is empty.")

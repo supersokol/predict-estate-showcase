@@ -8,7 +8,7 @@ def render():
     
     # Processes
     with st.expander("Processes"):
-        for name, meta in process_registry.registry.items():
+        for name, meta in process_registry.items():
             st.write(f"**{name}**: {meta.get('metadata', {}).get('description', 'No description')}")
     
     # Pipelines
@@ -17,11 +17,11 @@ def render():
             st.write(f"**{name}**: {path}")
 
     # Models
-    with st.expander("Models"):
-        for name, meta in model_registry.registry.items():
-            st.write(f"**{name}**: {meta.get('metadata', {}).get('description', 'No description')}")
+    #with st.expander("Models"):
+    #    for name, meta in model_registry.registry.items():
+    #        st.write(f"**{name}**: {meta.get('metadata', {}).get('description', 'No description')}")
 
     # Metaheuristics
-    with st.expander("Metaheuristics"):
-        for name, meta in metaheuristics_registry.registry.items():
-            st.write(f"**{name}**: {meta.get('metadata', {}).get('description', 'No description')}")
+    #with st.expander("Metaheuristics"):
+    #    for name, meta in metaheuristics_registry.registry.items():
+    #        st.write(f"**{name}**: {meta.get('metadata', {}).get('description', 'No description')}")

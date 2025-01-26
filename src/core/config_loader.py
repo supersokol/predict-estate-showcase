@@ -1,5 +1,5 @@
 from src.core.logger import logger
-
+from pathlib import Path
 from src.core.scraper import fetch_zillow_download_links
 from src.core.metadata_utils import update_data_config
 from src.core.file_utils import load_data
@@ -55,6 +55,8 @@ def load_all_configs_via_master():
     if not master_config_path:
         raise ValueError("MASTER_CONFIG_PATH not set in .env")
     
+    master_config_path = Path(master_config_path).as_posix()
+    
     # Load the master configuration file
     master_config = load_data(master_config_path, file_type="json", load_as="json", label="master_config")
     if not master_config:
@@ -65,24 +67,27 @@ def load_all_configs_via_master():
     
     # Retrieve the section specifying sub-configurations
     configs_section = master_config.get("configs", {})
+    configs_list = configs_section.get("configs_list",[])
+    loaded_configs["configs_list"] = configs_list
     for config_type, config_data in configs_section.items():
-        # Prepare a container for configurations of the current type
-        loaded_configs["loaded_configs"][config_type] = []
-        for config_item in config_data.get("items", []):
-            # Retrieve the path and metadata for each sub-configuration
-            config_path = config_item.get("path")
-            config_label = config_item.get("tag")
-            try:
-                # Load the sub-configuration using load_data()
-                config_content = load_data(config_path, file_type="json", load_as="json", label=config_label)
-                if config_content:
-                    # Append the metadata and content of the sub-configuration
-                    loaded_configs["loaded_configs"][config_type].append({
-                        "metadata": config_item,
-                        "content": config_content
-                    })
-            except Exception as e:
-                logger.error(f"Failed to load config '{config_label}' from {config_path}: {e}")
+        if isinstance(config_data, dict) and "items" in config_data:
+            # Prepare a container for configurations of the current type
+            loaded_configs["loaded_configs"][config_type] = []
+            for config_item in config_data.get("items", []):
+                # Retrieve the path and metadata for each sub-configuration
+                config_path = config_item.get("path")
+                config_label = config_item.get("tag")
+                try:
+                    # Load the sub-configuration using load_data()
+                    config_content = load_data(config_path, file_type="json", load_as="json", label=config_label)
+                    if config_content:
+                        # Append the metadata and content of the sub-configuration
+                        loaded_configs["loaded_configs"][config_type].append({
+                            "metadata": config_item,
+                            "content": config_content
+                        })
+                except Exception as e:
+                    logger.error(f"Failed to load config '{config_label}' from {config_path}: {e}")
     
     return loaded_configs
 

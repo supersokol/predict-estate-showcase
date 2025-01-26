@@ -1,30 +1,44 @@
 from sdk.api_client import APIClient
 import streamlit as st
+import json
 
-def render(api_url):
-    client = APIClient(api_url)
-    st.title("API Methods")
+def render():
+    MASTER_CONFIG_PATH = "config/master_config.json"
+    with open(MASTER_CONFIG_PATH, "r") as f:
+        master_config = json.load(f)
 
-    # Выбор метода
+    API_URL = master_config["api_url"]
+    client = APIClient(API_URL)
+    st.title("API Client Interface")
     methods = client.list_methods()
-    selected_method = st.selectbox("Select Method", list(methods.keys()))
 
+    # Select method
+    selected_method = st.selectbox("Select an API Method", list(methods.keys()))
     if selected_method:
-        method_meta = methods[selected_method]
-        st.write("**Description:**", method_meta["description"])
-        st.write("**Path:**", method_meta["path"])
+        metadata = methods[selected_method]
+        st.write("**Description:**", metadata["description"])
+        st.write("**Path:**", metadata["path"])
+        st.write("**HTTP Method:**", metadata["method"])
 
-        # Параметры метода
+        # Input parameters
         params = {}
-        for param in method_meta["parameters"]:
+        for param in metadata["parameters"]:
             param_name = param["name"]
-            if param["type"] == "string":
+            param_type = param.get("schema", {}).get("type", "string")
+            if param_type == "integer":
+                params[param_name] = st.number_input(param_name, step=1)
+            elif param_type == "boolean":
+                params[param_name] = st.checkbox(param_name)
+            else:
                 params[param_name] = st.text_input(param_name)
-            elif param["type"] == "integer":
-                params[param_name] = st.number_input(param_name)
 
-        # Выполнение метода
-        if st.button("Run Method"):
-            result = client.execute_method(selected_method, params)
-            st.subheader("Result")
-            st.json(result)
+        # Execute method
+        if st.button("Execute"):
+            try:
+                func = getattr(client, selected_method)
+                result = func(**params)
+                st.success("Execution Successful!")
+                st.write("**Result:**", result)
+                st.json(result)
+            except Exception as e:
+                st.error(f"Error: {e}")

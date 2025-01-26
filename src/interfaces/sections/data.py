@@ -28,6 +28,8 @@ def parse_metadata(metadata):
     Returns:
         dict: Parsed metadata dictionary.
     """
+    if isinstance(metadata, dict):
+        return metadata
     try:
         return json.loads(metadata)
     except json.JSONDecodeError:

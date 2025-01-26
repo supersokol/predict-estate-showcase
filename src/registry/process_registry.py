@@ -11,7 +11,8 @@ def register_process(name: str, metadata: dict = None, save_to_file: bool = True
     :param metadata: Metadata describing the process.
     """
     loaded_configs = load_all_configs_via_master()
-    if config_file and config_file in loaded_configs["configs"]["configs_list"]:
+    
+    if config_file and config_file in loaded_configs["configs_list"]:
         chosen_file= config_file
     else:
         master_config_path = os.getenv("MASTER_CONFIG_PATH")
@@ -21,7 +22,7 @@ def register_process(name: str, metadata: dict = None, save_to_file: bool = True
     
     chosen_config = next(
             config["content"] 
-            for config in loaded_configs["configs"]["configs_list"]
+            for config in loaded_configs["configs_list"]
             if config["content"]["config_name"] == chosen_file 
         )
     
@@ -48,7 +49,7 @@ def register_process(name: str, metadata: dict = None, save_to_file: bool = True
     :param metadata: Metadata describing the process.
     """
     loaded_configs = load_all_configs_via_master()
-    if config_file and config_file in loaded_configs["configs"]["configs_list"]:
+    if config_file and config_file in loaded_configs["configs_list"]:
         chosen_file= config_file
     else:
         master_config_path = os.getenv("MASTER_CONFIG_PATH")
@@ -57,9 +58,9 @@ def register_process(name: str, metadata: dict = None, save_to_file: bool = True
         chosen_file = os.path.basename(master_config_path)
     
     chosen_config = next(
-            config["content"] 
-            for config in loaded_configs["configs"]["configs_list"]
-            if config["content"]["config_name"] == chosen_file 
+            config 
+            for config in loaded_configs["configs_list"]
+            if config == chosen_file 
         )
     
 
