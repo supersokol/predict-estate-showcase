@@ -7,28 +7,76 @@ import os
 
 
 def load_all_configs_via_master():
-    # Загружаем путь к мастер-конфигу из .env
+    """
+    Loads all configurations specified in the master configuration file.
+
+    This function reads the path to the master configuration file from the environment
+    variable `MASTER_CONFIG_PATH`. It then loads the master configuration and all
+    sub-configurations specified within it.
+
+    The master configuration file should contain a section called `configs`, which includes
+    a list of configuration types. Each type has associated configuration items that specify
+    the file paths and optional metadata for the sub-configurations.
+
+    Returns:
+        dict: A dictionary containing the master configuration and all loaded sub-configurations.
+            Example structure:
+            ```python
+            {
+                "master_config": {...},
+                "loaded_configs": {
+                    "config_type_1": [
+                        {
+                            "metadata": {...},
+                            "content": {...}
+                        },
+                        ...
+                    ],
+                    ...
+                }
+            }
+            ```
+
+    Raises:
+        ValueError: If the `MASTER_CONFIG_PATH` is not set in the environment variables.
+        RuntimeError: If the master configuration file cannot be loaded.
+
+    Example:
+        ```python
+        # Assuming MASTER_CONFIG_PATH is set to "configs/master_config.json"
+        all_configs = load_all_configs_via_master()
+        print(all_configs["master_config"])
+        print(all_configs["loaded_configs"]["config_type_1"][0]["content"])
+        ```
+
+    """
+    # Load the path to the master configuration file from the environment variable
     master_config_path = os.getenv("MASTER_CONFIG_PATH")
     if not master_config_path:
         raise ValueError("MASTER_CONFIG_PATH not set in .env")
     
-    # Загружаем мастер-конфиг
+    # Load the master configuration file
     master_config = load_data(master_config_path, file_type="json", load_as="json", label="master_config")
     if not master_config:
         raise RuntimeError(f"Failed to load master config from {master_config_path}")
 
-    # Загружаем подконфиги
+    # Initialize the structure for loaded configurations
     loaded_configs = {"master_config": master_config, "loaded_configs": {}}
+    
+    # Retrieve the section specifying sub-configurations
     configs_section = master_config.get("configs", {})
     for config_type, config_data in configs_section.items():
+        # Prepare a container for configurations of the current type
         loaded_configs["loaded_configs"][config_type] = []
         for config_item in config_data.get("items", []):
+            # Retrieve the path and metadata for each sub-configuration
             config_path = config_item.get("path")
             config_label = config_item.get("tag")
             try:
-                # Загружаем подконфиг с использованием load_data
+                # Load the sub-configuration using load_data()
                 config_content = load_data(config_path, file_type="json", load_as="json", label=config_label)
                 if config_content:
+                    # Append the metadata and content of the sub-configuration
                     loaded_configs["loaded_configs"][config_type].append({
                         "metadata": config_item,
                         "content": config_content

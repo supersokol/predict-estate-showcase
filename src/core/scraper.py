@@ -121,6 +121,36 @@ def parse_full_name_zillow(full_name, zillow_dataset_label, config):
 def process_geography(geography, feature, dataset_name, glob_statistics, data_path):
     """
     Processes a single geography by downloading, loading, and saving data.
+
+    This function downloads data for a specific geography, loads it into a DataFrame, and
+    saves it to a file. It also updates global statistics.
+
+    Args:
+        geography (dict): Geography information containing download links and metadata.
+        feature (dict): Feature information including additional attributes and full name.
+        dataset_name (str): Name of the dataset being processed.
+        glob_statistics (dict): Global statistics dictionary to track processing metrics.
+        data_path (str): Path to save downloaded data files.
+
+    Returns:
+        tuple: A tuple containing:
+            - dataset_name (str): Name of the dataset.
+            - dataframe (pd.DataFrame): Loaded data as a DataFrame.
+            - table_name (str): Name of the database table for the dataset.
+            - file_path (str): Path to the saved file.
+
+    Raises:
+        Exception: If an error occurs during processing.
+
+    Example:
+        ```python
+        geography = {"geography_value": "US", "download_link": "https://example.com/data.csv"}
+        feature = {"additional_features": [], "full_name": "FeatureName"}
+        dataset_name = "example_dataset"
+        glob_statistics = {}
+        data_path = "data/"
+        result = process_geography(geography, feature, dataset_name, glob_statistics, data_path)
+        ```
     """
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     logger.debug(f"Geography: {geography}")
@@ -139,6 +169,7 @@ def process_geography(geography, feature, dataset_name, glob_statistics, data_pa
     logger.info(f"File path: {file_path}")
     update_statistics(glob_statistics, "unique_features_processed", value=feature_full_name)
     try:
+        # Download and load the data
         dataframe = download_and_load_csv(
             download_link=feature_download_link ,
             file_name=file_name,
@@ -151,6 +182,8 @@ def process_geography(geography, feature, dataset_name, glob_statistics, data_pa
         if not isinstance(dataframe, pd.DataFrame) or dataframe.empty:
             logger.warning(f"Invalid or empty DataFrame for {file_name}. Skipping.")
             return None, None, None, None
+        
+        # Create a sanitized table name
         table_name = f"{dataset_name}_{feature_full_name}_{geography['geography_value']}_{timestamp}"
         update_statistics(glob_statistics, "dataframes_loaded")
         table_name = sanitize_filename(table_name)  
@@ -162,7 +195,29 @@ def process_geography(geography, feature, dataset_name, glob_statistics, data_pa
 
 def download_and_load_csv(download_link, file_name, file_path, label):
     """
-    Downloads a CSV file and loads it as a DataFrame.
+    Downloads a CSV file from a given link and loads it into a DataFrame.
+
+    Args:
+        download_link (str): URL to download the CSV file.
+        file_name (str): Name of the file to save locally.
+        file_path (str): Path to save the downloaded file.
+        label (str): Label for the data being loaded.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the loaded data.
+
+    Raises:
+        Exception: If an error occurs during the download or loading process.
+
+    Example:
+        ```python
+        dataframe = download_and_load_csv(
+            download_link="https://example.com/data.csv",
+            file_name="example.csv",
+            file_path="data/example.csv",
+            label="Example Label"
+        )
+        ```
     """
     try:
         # Download CSV file
@@ -182,19 +237,40 @@ def download_and_load_csv(download_link, file_name, file_path, label):
 
 def fetch_zillow_download_links(config):
     """
-    Fetches all available download links for Zillow datasets based on the provided labels and config.
+    Fetches all available download links for Zillow datasets based on the provided configuration.
 
-    :param config: Configuration dictionary containing parsing rules and patterns.
-    :return: Dictionary with Zillow datasets structured by dataset labels and metadata.
+    Args:
+        config (dict): Configuration dictionary containing parsing rules, patterns,
+            and options for fetching Zillow data.
+
+    Returns:
+        dict: A dictionary containing the downloaded Zillow datasets and metadata.
+
+    Raises:
+        Exception: If an error occurs during the fetching process.
+
+    Example:
+        ```python
+        config = {
+            "zillow_base_url": "https://www.zillow.com/research/data/",
+            "zillow_data_labels_target": ["Home Values"],
+            "geography_options": [["US"]],
+            "metadata_config": {},
+            "save_to_json": True,
+            "save_to_json_path": "data/",
+            "save_to_json_file": "zillow_results"
+        }
+        result = fetch_zillow_download_links(config)
+        ```
     """
     timestamp_start = time.strftime("%Y%m%d-%H%M%S")
     logger.info(f"Starting Zillow data fetch process at {timestamp_start}.")
     
-    # Проверяем наличие data_path в конфиге
     data_path = config.get("data_path", "data/temp_data")
     data_path = os.path.join(data_path, f"scraper_data_{timestamp_start}")
     ensure_directory_exists(data_path)
     
+    # Initialize Selenium WebDriver
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
     logger.info("Selenium WebDriver configured.")
@@ -236,14 +312,19 @@ def fetch_zillow_download_links(config):
         # Open the Zillow page
         driver.get(config["zillow_base_url"])
         time.sleep(5)  # Allow the page to load
+        
+        # Validate target labels
         zillow_data_labels_available = config.get("zillow_data_labels_available", [])
         logger.info(f"All available amount: {len(zillow_data_labels_available)}, labels:{zillow_data_labels_available}")
         zillow_data_labels_target = config.get("zillow_data_labels_target", [])
         logger.info(f"Target labels amount: {len(zillow_data_labels_target)}, labels: {zillow_data_labels_target}")
         valid_zillow_data_labels_target = [label for label in zillow_data_labels_target if label in zillow_data_labels_available]
         logger.info(f"Valid labels amount: {len(valid_zillow_data_labels_target)}, labels: {valid_zillow_data_labels_target}")
+        
+        # Process each target label
         for label in valid_zillow_data_labels_target:
             logger.info(f"Processing label: {label}")
+            # Locate and process dropdowns and download links
             dropdown_id_1 = f"{label}dropdown-1"
             dropdown_id_2 = f"{label}dropdown-2"
             download_link_id = f"{label}download-link"
@@ -377,6 +458,21 @@ def fetch_zillow_download_links(config):
 def process_zillow_dataset(dataset_name, datasets, glob_statistics, data_path):
     """
     Processes a Zillow dataset by parsing and processing its components.
+
+    Args:
+        dataset_name (str): Name of the dataset.
+        datasets (list): List of dataset configurations.
+        glob_statistics (dict): Global statistics dictionary.
+        data_path (str): Path to save downloaded files.
+
+    Returns:
+        generator: Yields the processed data for each geography.
+
+    Example:
+        ```python
+        for result in process_zillow_dataset("example_dataset", datasets, {}, "data/"):
+            print(result)
+        ```
     """
     logger.info(f"Datasets: {datasets}")
     for dataset in datasets:
@@ -399,7 +495,7 @@ def process_zillow_dataset(dataset_name, datasets, glob_statistics, data_path):
                     yield process_geography(geography, feature, dataset_name, glob_statistics, data_path)
                     
     
-def process_zillow_datasets(zillow_datasets, DB_FILE = "data/db_files/zillow_datasets.db"):
+def process_zillow_datasets(zillow_datasets, db_file = "zillow_datasets.db"):
     # Инициализация глобальной статистики
     glob_statistics = {
         "unique_features_processed": set(),
@@ -411,11 +507,11 @@ def process_zillow_datasets(zillow_datasets, DB_FILE = "data/db_files/zillow_dat
         "errors": {}
     }
     result_dict = {"data":{}}
-    data_path = zillow_datasets.get("data_path", "data/temp_data")
-    ensure_directory_exists(data_path)  # Убедимся, что директория существует
+    data_path = os.getenv("DB_PATH")
+    ensure_directory_exists(data_path)  # Ensure path exists
     logger.info(f"Processing Zillow datasets with data path: {data_path}")
     
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(data_path+db_file)
     cursor = conn.cursor()
     assert sanitize_filename("Test:File/Name") == "Test_File_Name", "Filename sanitization test failed"
     # Create table of tables
@@ -428,7 +524,7 @@ def process_zillow_datasets(zillow_datasets, DB_FILE = "data/db_files/zillow_dat
     )
     """)
     conn.commit()
-    db_manager = DatabaseManager(DB_FILE)
+    db_manager = DatabaseManager(db_file)
     for dataset_name, datasets in zillow_datasets['zillow_datasets'].items():
         try:
             dataset_name, dataframe, table_name, file_path = process_zillow_dataset(dataset_name, datasets, glob_statistics, data_path)
@@ -457,12 +553,12 @@ def process_zillow_datasets(zillow_datasets, DB_FILE = "data/db_files/zillow_dat
     result_dict["statistics"] = stats_dict
     conn.close()
     logger.info("Processing complete.")
-    # Сохранение статистики в БД
+    # Save stats to DB
     conn = sqlite3.connect("data/zillow_datasets.db")
     stats_df = pd.DataFrame([stats_dict])
     stats_df.to_sql("processing_statistics", conn, if_exists="replace", index=False)
     logger.info(f"Saved statistics to database: {stats_df.to_dict(orient='records')}")
 
-    # Закрытие соединения с БД
+    # Close connection
     conn.close()
     return result_dict

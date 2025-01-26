@@ -18,18 +18,42 @@ from wikipediaapi import Wikipedia
 
 def get_context(context_type: Optional[str], **kwargs) -> Union[str, Dict[str, Any]]:
     """
-    Получает контекст в зависимости от типа источника.
+    Fetches context based on the specified source type.
 
-    :param context_type: Тип контекста (text, file, url, wiki).
-    :param kwargs: Дополнительные параметры (text, file_path, url, term).
-    :return: Контекст в виде строки или структурированных данных.
+    This function retrieves content from various sources such as text, files, URLs, or Wikipedia.
+
+    Args:
+        context_type (Optional[str]): The type of context to fetch. Supported types are:
+            - "text": Plain text input.
+            - "file": File path to load data from.
+            - "url": URL to scrape content.
+            - "wiki": Wikipedia term to fetch an article.
+        kwargs: Additional parameters required for specific context types:
+            - text (str): Input text (for "text" context).
+            - file_path (str): Path to the file (for "file" context).
+            - url (str): URL of the webpage (for "url" context).
+            - term (str): Wikipedia term (for "wiki" context).
+
+    Returns:
+        Union[str, Dict[str, Any]]: The retrieved context as plain text or structured data.
+
+    Raises:
+        FileNotFoundError: If the specified file does not exist (for "file" context).
+        ValueError: If required parameters are missing or the context type is unsupported.
+
+    Example:
+        ```python
+        text_context = get_context("text", text="Example text")
+        file_context = get_context("file", file_path="data/sample.json")
+        url_context = get_context("url", url="https://example.com")
+        wiki_context = get_context("wiki", term="Python (programming language)")
+        ```
     """
     try:
         if context_type == None:
             logger.warning("No context type provided. Returning empty context.")
             return None
         elif context_type == "text":
-            # Ручной ввод текста
             text = kwargs.get("text", "")
             logger.info(f"Text context received with length: {len(text)}:\n{text}\n\n")
             return text
@@ -40,7 +64,7 @@ def get_context(context_type: Optional[str], **kwargs) -> Union[str, Dict[str, A
             logger.info(f"File context received. Path: {file_path}")
             return _process_file(file_path)
         elif context_type == "url":
-            # Веб-скрапинг текста со страницы
+            # bs4 web-scraping
             url = kwargs.get("url")
             if not url:
                 raise ValueError("No URL provided for context extraction.")
@@ -52,10 +76,10 @@ def get_context(context_type: Optional[str], **kwargs) -> Union[str, Dict[str, A
             logger.info(f"Extracted content from URL with length: {len(content)}:\n{content}\n\n")
     
         elif context_type == "wiki":
-            # Получение статьи из Wikipedia
-            # Установка пользовательского агента
+            # Obtain text from the Wikipedia
+            # useragent setup
             wiki = Wikipedia(
-                user_agent="MyAIWorkspace/1.0 (myemail@example.com) CustomLangGraphProcessor"
+                user_agent="TestAIWorkspace/1.0 (supersokol777@gmail.com) PredictEstateShowCase"
             )
             term = kwargs.get("term")
             if not term:
@@ -76,10 +100,25 @@ def get_context(context_type: Optional[str], **kwargs) -> Union[str, Dict[str, A
 
 def _process_file(file_path: str) -> Union[str, Dict[str, Any]]:
     """
-    Обрабатывает файл и возвращает его содержимое.
+    Processes a file and returns its content.
 
-    :param file_path: Путь к файлу.
-    :return: Текстовое содержимое или структурированные данные.
+    Depending on the file extension, the content is loaded as plain text,
+    JSON, or structured data from CSV.
+
+    Args:
+        file_path (str): Path to the file.
+
+    Returns:
+        Union[str, Dict[str, Any]]: The content of the file as text or structured data.
+
+    Raises:
+        ValueError: If the file format is unsupported.
+        Exception: If an error occurs while processing the file.
+
+    Example:
+        ```python
+        content = _process_file("data/sample.csv")
+        ```
     """
     file_extension = os.path.splitext(file_path)[1].lower()
     logger.info(f"Detected file extension: {file_extension}")
@@ -117,9 +156,18 @@ def _process_file(file_path: str) -> Union[str, Dict[str, Any]]:
 
 def ensure_directory_exists(directory):
     """
-    Ensures that the specified directory exists. If it does not, creates it.
+    Ensures that a directory exists, creating it if necessary.
 
-    :param directory: Path to the directory.
+    Args:
+        directory (str): Path to the directory.
+
+    Returns:
+        None
+
+    Example:
+        ```python
+        ensure_directory_exists("data/output")
+        ```
     """
     try:
         if not os.path.exists(directory):
@@ -132,8 +180,19 @@ def save_results_to_json(results, filename="results.json", directory_path="data"
     """
     Saves results to a JSON file.
 
-    :param results: List of results to save.
-    :param filename: Name of the file to save.
+    Args:
+        results (list): Data to save.
+        filename (str, optional): Name of the output file. Defaults to "results.json".
+        directory_path (str, optional): Directory to save the file. Defaults to "data".
+
+    Returns:
+        None
+
+    Example:
+        ```python
+        results = [{"id": 1, "value": "example"}]
+        save_results_to_json(results, "output.json", "output")
+        ```
     """
     try:
         ensure_directory_exists(directory_path)
@@ -146,8 +205,20 @@ def save_results_to_json(results, filename="results.json", directory_path="data"
 
 def clean_text(text):
     """
-    Cleans text from unnecessary characters, replaces \n with spaces,
-    sequences of spaces with a single space, and trims spaces from the edges.
+    Cleans a given text string by removing unnecessary whitespace and newlines.
+
+    Args:
+        text (str): Input text to clean.
+
+    Returns:
+        str: Cleaned text.
+
+    Example:
+        ```python
+        raw_text = "   Example   text\nwith unnecessary   spaces.   "
+        cleaned = clean_text(raw_text)
+        print(cleaned)  # Output: "Example text with unnecessary spaces."
+        ```
     """
     if not text:
         return None
@@ -157,9 +228,21 @@ def clean_text(text):
 
 def sanitize_filename(filename):
     """
-    Sanitizes the filename by removing or replacing invalid characters.
+    Sanitizes a filename by replacing invalid characters with underscores.
+
+    Args:
+        filename (str): The original filename.
+
+    Returns:
+        str: Sanitized filename.
+
+    Example:
+        ```python
+        filename = "example<>.txt"
+        sanitized = sanitize_filename(filename)
+        print(sanitized)  # Output: "example__.txt"
+        ```
     """
-    # Заменяем запрещенные символы на подчеркивание
     return re.sub(r'[<>:"/\\|?*]', '_', filename)
 
 def extract_timestamp_from_filename(filename):

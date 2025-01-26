@@ -1,47 +1,79 @@
-import os
-import streamlit as st
 from src.core.file_utils import get_context
-from src.registry import DataSourceRegistry
+import streamlit as st
+import os
+from typing import Optional
 
-data_registry = DataSourceRegistry()
 
 def render():
-    st.title("Local Source Management")
+    """Renders the Streamlit interface for uploading data."""
+    st.title("Upload Data")
 
-    # Добавление нового источника
-    st.subheader("Add New Source")
-    source_name = st.text_input("Source Name")
-    description = st.text_area("Description")
-    content_type = st.selectbox("Content Type", ["text", "file", "url", "wiki"])
-    context_data = None
+    # Select directory for upload
+    st.subheader("Select Upload Path")
+    base_path = "data"
+    all_directories = [base_path]
+    for root, dirs, _ in os.walk(base_path):
+        for d in dirs:
+            all_directories.append(os.path.join(root, d))
 
-    if content_type == "text":
-        context_data = st.text_area("Enter Text")
-    elif content_type == "file":
-        uploaded_file = st.file_uploader("Upload File")
-        if uploaded_file:
-            save_path = f"data/uploaded/{uploaded_file.name}"
-            os.makedirs("data/uploaded", exist_ok=True)
-            with open(save_path, "wb") as f:
-                f.write(uploaded_file.read())
-            st.success(f"File uploaded to {save_path}")
-            context_data = {"file_path": save_path}
-    elif content_type == "url":
-        url = st.text_input("Enter URL")
-        if url:
-            context_data = {"url": url}
-    elif content_type == "wiki":
-        term = st.text_input("Enter Wikipedia Term")
-        if term:
-            context_data = {"term": term}
+    upload_path = st.selectbox("Upload Path", all_directories)
 
-    if st.button("Process and Add Source"):
-        try:
-            processed_context = get_context(content_type, **context_data)
-            save_path = f"data/uploaded/{source_name}.txt"
-            with open(save_path, "w", encoding="utf-8") as f:
-                f.write(processed_context if isinstance(processed_context, str) else str(processed_context))
-            data_registry.register_source(source_name, {"description": description, "local_files": {"uploaded": [save_path]}})
-            st.success(f"Source '{source_name}' added and saved to {save_path}")
-        except Exception as e:
-            st.error(f"Error processing source: {e}")
+    # Select data source
+    st.subheader("Select Source Option")
+    source_option = st.radio("Select Source Option", ["url", "wiki term", "text", "file"])
+
+    # Process input data using get_context
+    input_data = None
+    try:
+        if source_option == "url":
+            url = st.text_input("Enter URL")
+            if url and st.button("Preview"):
+                input_data = get_context(context_type="url", url=url)
+                st.text_area("Preview of the URL content", input_data[:1000], height=300)
+                st.write(f"Full response length: {len(input_data)} characters")
+        elif source_option == "wiki term":
+            wiki_term = st.text_input("Enter Wikipedia Term")
+            if wiki_term and st.button("Preview"):
+                input_data = get_context(context_type="wiki", term=wiki_term)
+                st.text_area("Preview of the Wikipedia article", input_data[:1000], height=300)
+                st.write(f"Full response length: {len(input_data)} characters")
+        elif source_option == "text":
+            input_data = st.text_area("Enter Text Content", height=300)
+        elif source_option == "file":
+            uploaded_file = st.file_uploader("Upload File", type=["txt", "csv", "json", "pdf", "md"])
+            if uploaded_file:
+                # Save temporary file for get_context
+                temp_path = os.path.join("temp", uploaded_file.name)
+                os.makedirs("temp", exist_ok=True)
+                with open(temp_path, "wb") as f:
+                    f.write(uploaded_file.read())
+                input_data = get_context(context_type="file", file_path=temp_path)
+    except Exception as e:
+        st.error(f"Error while processing data: {e}")
+
+    # Upload data button
+    if st.button("Upload"):
+        if not input_data:
+            st.error("No data to upload. Please provide input.")
+        else:
+            # Generate path for saving file
+            file_name = {
+                "url": "uploaded_url_data.txt",
+                "wiki term": "uploaded_wiki_data.txt",
+                "text": "uploaded_text_data.txt",
+                "file": uploaded_file.name if source_option == "file" else "uploaded_file_data.txt",
+            }.get(source_option, "uploaded_data.txt")
+            save_path = os.path.join(upload_path, file_name)
+
+            # Save data to file
+            try:
+                with open(save_path, "w", encoding="utf-8") as f:
+                    f.write(input_data)
+                st.success(f"Data uploaded successfully to {save_path}.")
+                st.info("The uploaded data is now registered and available for further processing.")
+            except Exception as e:
+                st.error(f"Failed to save data: {e}")
+
+# Example usage as a section
+if __name__ == "__main__":
+    render()

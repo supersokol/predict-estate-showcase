@@ -1,4 +1,5 @@
 import sys
+import json
 sys.path.append("Q:/SANDBOX/PredictEstateShowcase_dev/src")
 sys.path.append("Q:/SANDBOX/PredictEstateShowcase_dev/")
 print(sys.path)
@@ -48,11 +49,25 @@ Swagger combined with MkDocs for comprehensive API documentation:
     redoc_url=None,
 )
 
-
+# Mount static files for MkDocs
 app.mount("/mkdocs", StaticFiles(directory="site"), name="mkdocs")
 
 @app.get("/", include_in_schema=False)
 async def root():
+    """
+    Root endpoint providing navigation links to documentation.
+
+    Returns:
+        dict: Links to Swagger UI and MkDocs documentation.
+
+    Example:
+        ```json
+        {
+            "swagger_ui": "/docs",
+            "mkdocs_ui": "/mkdocs/index.html"
+        }
+        ```
+    """
     return {
         "swagger_ui": "/docs",
         "mkdocs_ui": "/mkdocs/index.html"
@@ -62,94 +77,49 @@ async def root():
 def healthcheck():
     return {"status": "ok"}
 
-
+# Define a data registry for managing data sources
 data_registry = data_source_registry
-class AddFilesRequest(BaseModel):
-    source_name: str
-    new_files: List[str]
 
-@app.post("/data/files/add", tags=["Data Sources"])
-async def add_files_to_source(request: AddFilesRequest):
+class FileRecord(BaseModel):
     """
-    Add new files to an existing data source.
+    Record model for obtaining file records
     """
-    try:
-        data_registry.add_to_uploaded(request.source_name, request.new_files)
-        return {
-            "status": "success",
-            "message": f"Files added to the 'uploaded' section of data source '{request.source_name}'.",
-            "uploaded": data_registry.get_source(request.source_name)["local_files"]["uploaded"]
-        }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
-class DataSourceConfig(BaseModel):
-    name: str  
-    description: str
-    #zillow_data_labels_target: Optional[List[str]]
-
-
-@app.post("/data/register", tags=["Data Sources"])
-async def register_data_source(user_config: DataSourceConfig, **kwargs):
-    """
-    Register a new data source and download its datasets.
-    """
-    try:
-        loaded_configs = load_all_configs_via_master()
-
-        if user_config["data_type"] == "zillow_datasets":
-            zillow_config = next(
-                    config["content"] 
-                    for config in loaded_configs["loaded_configs"]["data_sources"] 
-                    if config["content"]["config_name"] == "zillow_config"
-                )
-            
-            target_labels = kwargs.get("zillow_data_labels_target", None)
-            if target_labels:
-                zillow_config["zillow_data_labels_target"]=target_labels
-            chosen_config = zillow_config
-        local_files = manage_data_processing(data_registry, chosen_config)
-        data_registry.add_to_datasets(chosen_config.name, local_files)
-        return {
-            "status": "success",
-            "message": f"Data source '{chosen_config.name}' registered successfully.",
-            "datasets": local_files,
-        }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.get("/data/files/{source_name}", tags=["Data Sources"])
-async def get_data_files(source_name: str):
-    """
-    Retrieve local files for a registered data source.
-    """
-    source = data_registry.get_source(source_name)
-    if not source:
-        raise HTTPException(status_code=404, detail=f"Data source '{source_name}' not found.")
-    return {"local_files": source.get("local_files", [])}
-
-
-@app.get("/data/sample/{source_name}", tags=["Data Sources"])
-async def get_data_sample(source_name: str, rows: int = 5):
-    """
-    Get a preview (sample) of a dataset.
-    """
-    source = data_registry.get_source(source_name)
-    if not source:
-        raise HTTPException(status_code=404, detail=f"Data source '{source_name}' not found.")
-    
-    local_files = source.get("local_files", [])
-    if not local_files:
-        raise HTTPException(status_code=404, detail=f"No local files found for '{source_name}'.")
-
-    # Загружаем файл и возвращаем образец
-    import pandas as pd
-    file_path = local_files[0]  # Возьмем первый файл
-    df = pd.read_csv(file_path)
-    return {"sample": df.head(rows).to_dict(orient="records")}
-
+    id: int
+    file_path: str
+    file_type: str
+    format: str
+    timestamp: str
+    metadata: dict
 #######
+@app.put("/data_sources", response_model=dict)
+def update_registry():
+    """_summary_
+
+    Returns:
+        _type_: _description_
+    """
+    data_registry.update_registry()
+    return {"message": "Registry updated successfully."}
+
+@app.get("/data_sources", response_model=list[FileRecord])
+def get_table():
+    """_summary_
+
+    Returns:
+        _type_: _description_
+    """
+    rows = data_registry.get_table()
+    records = []
+    for row in rows:
+        records.append({
+            "id": row[0],
+            "file_path": row[1],
+            "file_type": row[2],
+            "format": row[3],
+            "timestamp": row[4],
+            "metadata": json.loads(row[5] if row[5] else "{}"),
+        })
+    return records
 
 # Helper functions for registry execution
 def get_registry_metadata(registry):

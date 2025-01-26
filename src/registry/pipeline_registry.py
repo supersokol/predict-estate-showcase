@@ -22,6 +22,8 @@ class PipelineRegistry:
     def list_pipelines(self):
         return list(self.registry.keys())
 
+pipeline_registry = PipelineRegistry()
+
 class PipelineExecutor:
     def __init__(self, config_path, max_iterations=100):
         self.config_path = config_path
@@ -90,6 +92,10 @@ class PipelineExecutor:
     def _execute_nested_pipeline(self, step, df):
         nested_pipeline_name = step["name"]
         logger.info(f"Executing nested pipeline: {nested_pipeline_name}")
-        nested_pipeline_path = f"pipelines/{nested_pipeline_name}.json"
-        nested_executor = PipelineExecutor(nested_pipeline_path, self.max_iterations)
-        nested_executor.execute(df)
+    
+        try:
+            nested_pipeline_path = pipeline_registry.get_pipeline(nested_pipeline_name)
+            nested_executor = PipelineExecutor(nested_pipeline_path, self.max_iterations)
+            nested_executor.execute(df)
+        except ValueError as e:
+            logger.error(e)
