@@ -95,7 +95,7 @@ PredictEstateShowcase integrates multiple data sources:
 
 5. Run full setup (Stramlit+FastAPI+Static MkDocs):
    ```bash
-   python src/app/run_services.py 
+   python src/run_services.py 
    ```
 
 ### Usage
@@ -129,20 +129,16 @@ PredictEstateShowcase/
 ├── notebooks/               # Jupyter Notebooks for analysis and examples
 ├── tests/                   # Unit and integration tests
 ├── src/                     # Main source code
-│   ├── analysis/            # Modules for data analysis and visualization
+│   ├── data_analysis/       # Modules for data analysis and visualization
 │   ├── api/                 # FastAPI implementation for the project
-│   ├── app/                 # Application entry points and higher-level logic
 │   ├── core/                # Core utilities and foundational modules
-│   ├── eda/                 # Exploratory Data Analysis scripts and functions
-│   ├── integrations/        # External API and service integrations
+│   │   ├── integrations/        # External API and service integrations
 │   ├── interfaces/          # Interfaces for interacting with the user
 │   │   ├── sections/        # Specific UI sections and components
-│   ├── metaheuristics/      # Algorithms and optimization routines
 │   ├── models/              # Machine learning and predictive models
-│   ├── processes/           # Workflow and orchestration logic
+│   ├── workflows/           # Workflow and orchestration logic
 │   ├── registry/            # Registries for managing data, pipelines, and configurations
-│   ├── sdk/                 # Software Development Kit for custom utilities
-│   └── main.py              # Entry script for demonstration and testing
+│   └── run_services.py      # Script to run core services
 ```
 
 ## Contributing

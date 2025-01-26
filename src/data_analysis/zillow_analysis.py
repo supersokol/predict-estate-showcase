@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from src.core.logger import logger
-from src.analysis.base_analysis import BaseDataAnalysis
+from src.data_analysis.base_analysis import BaseDataAnalysis
 import statistics
 
 def analyze_and_log_zillow_data(json_data):

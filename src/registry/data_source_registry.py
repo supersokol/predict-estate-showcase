@@ -1,6 +1,7 @@
 import os
 import json
 import sqlite3
+import csv
 from datetime import datetime
 from typing import List, Dict, Optional
 from src.core.logger import logger
@@ -84,24 +85,49 @@ class DataSourceRegistry:
 
     def _get_file_metadata(self, file_path: str) -> Dict[str, str]:
         """
-        Get metadata for a file, such as size and last modified timestamp.
+    Get metadata for a file, including size, last modified timestamp,
+    number of characters, number of lines, and number of columns.
 
-        Args:
-            file_path (str): Path to the file.
+    Args:
+        file_path (str): Path to the file.
 
-        Returns:
-            dict: Metadata including size in bytes and last modified timestamp.
+    Returns:
+        dict: Metadata including size in bytes, last modified timestamp,
+            number of characters, number of lines, and number of columns.
 
-        Example:
-            ```python
-            metadata = registry._get_file_metadata("data/sample.csv")
-            print(metadata)
-            ```
+    Example:
+        ```python
+        metadata = registry._get_file_metadata("data/sample.csv")
+        print(metadata)
+        ```
         """
         metadata = {
             "size_bytes": os.path.getsize(file_path),
             "last_modified": datetime.fromtimestamp(os.path.getmtime(file_path)).isoformat(),
         }
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                content = file.read()
+                metadata["num_chars"] = len(content)
+                metadata["num_lines"] = content.count("\n") + 1
+
+                # Определяем количество столбцов для CSV файлов
+                if file_path.lower().endswith(".csv"):
+                    file.seek(0)  # Возвращаемся в начало файла
+                    reader = csv.reader(file)
+                    first_row = next(reader, [])
+                    metadata["num_columns"] = len(first_row)
+                else:
+                    metadata["num_columns"] = 1
+                metadata["status"] = "success" 
+                metadata["error"] = None
+        except Exception as e:
+            # Обработка ошибок чтения файлов
+            metadata["num_chars"] = 0
+            metadata["num_lines"] = 0
+            metadata["num_columns"] = 1
+            metadata["status"] = "error"
+            metadata["error"] = str(e)
         return metadata
 
     def update_registry(self):

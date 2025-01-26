@@ -87,16 +87,16 @@ def render():
     if "csv" in selected_formats or "dataset" in selected_types:
         csv_data = filtered_table[filtered_table["format"] == "csv"]
         if not csv_data.empty:
-            total_lines = csv_data["metadata"].apply(lambda x: parse_metadata(x).get("lines", 0)).sum()
-            total_chars = csv_data["metadata"].apply(lambda x: parse_metadata(x).get("chars", 0)).sum()
+            total_lines = csv_data["metadata"].apply(lambda x: parse_metadata(x).get("num_lines", 0)).sum()
+            total_chars = csv_data["metadata"].apply(lambda x: parse_metadata(x).get("num_chars", 0)).sum()
 
             st.text(f"Total lines in filtered CSV files: {total_lines}")
             st.text(f"Total characters in filtered CSV files: {total_chars}")
 
             # Statistics for lines and columns
             sample_stats = pd.DataFrame({
-                "Lines": csv_data["metadata"].apply(lambda x: parse_metadata(x).get("lines", 0)),
-                "Chars": csv_data["metadata"].apply(lambda x: parse_metadata(x).get("chars", 0)),
+                "Lines": csv_data["metadata"].apply(lambda x: parse_metadata(x).get("num_lines", 0)),
+                "Columns": csv_data["metadata"].apply(lambda x: parse_metadata(x).get("num_columns", 0)),
             })
             stats = sample_stats.describe().transpose()
             st.dataframe(stats)

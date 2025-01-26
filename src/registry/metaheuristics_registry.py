@@ -1,6 +1,6 @@
 import json
 from src.core import logger
-from src.integrations.external_api_calls import call_llm_api, call_osm_api
+from src.core.integrations.external_api_calls import call_llm_api, call_osm_api
 from src.registry import process_registry
 
 

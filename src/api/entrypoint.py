@@ -17,10 +17,10 @@ from src.registry import (
 )
 from src.registry.data_workflow import manage_data_processing
 
-from src.processes.data_processing import *
-from src.processes.basic_eda import *
-from src.processes.report_generation import *
-from src.processes.model_processes import *
+from src.workflows.data_processing import *
+from src.workflows.basic_eda import *
+from src.workflows.report_generation import *
+from src.workflows.model_processes import *
 
 from src.models.regression_models import *
 #from src.models.genetic_algorithms import *

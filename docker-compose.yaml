@@ -1,0 +1,102 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: predictestate-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://predictestateuser:securepassword@postgres:5432/predictestate
+    depends_on:
+      - postgres
+      - elasticsearch
+      - logstash
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.streamlit
+    container_name: predictestate-streamlit
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+
+  mkdocs:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mkdocs
+    container_name: predictestate-mkdocs
+    ports:
+      - "8001:8001"
+
+  airflow:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    container_name: predictestate-airflow
+    ports:
+      - "8080:8080"
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://predictestateuser:securepassword@postgres:5432/predictestate
+    volumes:
+      - ./src/workflows:/opt/airflow/dags
+      - ./logs/airflow:/opt/airflow/logs
+    depends_on:
+      - postgres
+
+  elasticsearch:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.elk
+      target: elasticsearch
+    container_name: predictestate-elasticsearch
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
+    ports:
+      - "9200:9200"
+
+  kibana:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.elk
+      target: kibana
+    container_name: predictestate-kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  logstash:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.elk
+      target: logstash
+    container_name: predictestate-logstash
+    ports:
+      - "5044:5044"
+    volumes:
+      - ./docker/configs/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+
+  postgres:
+    image: postgres:13
+    container_name: predictestate-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: predictestateuser
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: predictestate
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
+  data:
+  config:
+  logs:

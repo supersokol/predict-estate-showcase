@@ -1,4 +1,4 @@
-from sdk.api_client import APIClient
+from src.api.api_client import APIClient
 import streamlit as st
 import json
 

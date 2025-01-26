@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.git
+.env
+data/
+logs/
+docs/
+site/
+pes_s_env/

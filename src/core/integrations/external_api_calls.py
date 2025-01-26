@@ -1,5 +1,5 @@
 from codecs import oem_decode
-
+import openai
 
 def call_osm_api(df, parameters):
     # Example: Add latitude and longitude based on address

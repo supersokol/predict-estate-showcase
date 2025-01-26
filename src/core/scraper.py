@@ -14,7 +14,7 @@ from src.core.logger import logger
 from src.core.file_utils import sanitize_filename, load_data, clean_text, ensure_directory_exists, save_results_to_json
 from src.core.db_manager import DatabaseManager
 from src.core.metadata_utils import get_metadata, update_data_config, update_statistics
-from src.analysis.zillow_analysis import analyze_and_log_zillow_data
+from src.data_analysis.zillow_analysis import analyze_and_log_zillow_data
 import time
 import os
 import re

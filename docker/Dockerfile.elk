@@ -1,0 +1,9 @@
+FROM docker.elastic.co/elasticsearch/elasticsearch:8.11.1 as elasticsearch
+ENV discovery.type=single-node
+ENV ES_JAVA_OPTS="-Xms512m -Xmx512m"
+
+FROM docker.elastic.co/logstash/logstash:8.11.1 as logstash
+COPY docker/configs/logstash/logstash.conf /usr/share/logstash/pipeline/logstash.conf
+
+FROM docker.elastic.co/kibana/kibana:8.11.1 as kibana
+ENV ELASTICSEARCH_HOSTS=http://elasticsearch:9200
