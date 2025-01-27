@@ -24,7 +24,7 @@ import io
 import base64
 import os
 from typing import Dict, List, Tuple, Optional
-from src.core.eda_manger import TimeSeriesAnalyzer, TimeSeriesRegressor,  StatisticalForecaster, SpectralAnalyzer
+from src.core.eda_manger import TimeSeriesAnalyzer, TimeSeriesRegressor,  StatisticalForecaster, SpectralAnalyzer, filter_numeric_columns
 from src.core.logger import logger
 
 @st.cache_data
@@ -399,10 +399,15 @@ def render_analysis(file_path, file_details, metadata):
         # Get time series data
         timeseries_dict = ts_analyzer.analyze_file(file_path)
         ts_data = ts_analyzer.create_timeseries_table()
+        # Preprocess DataFrame
+        exclude_columns = ['dates']  # Exclude the 'dates' column if present
+        numeric_data = filter_numeric_columns(ts_data, exclude_columns=exclude_columns)
+
+        # Select numeric columns for analysis
+        available_series = numeric_data.columns
         
         # Time Series Selection
         st.header("Time Series Analysis")
-        available_series = [col for col in ts_data.columns if col != 'dates']
         selected_series = st.multiselect(
             "Select Time Series for Analysis",
             available_series,
@@ -659,10 +664,14 @@ def render_spectral_analysis(file_path, detrend=True, analyze_significance=True)
     timeseries_dict = ts_analyzer.analyze_file(file_path)
     data = ts_analyzer.create_timeseries_table()
     analyzer = SpectralAnalyzer()
-    
+    # Preprocess DataFrame
+    exclude_columns = ['dates']  # Exclude 'dates' column
+    numeric_data = filter_numeric_columns(data, exclude_columns=exclude_columns)
+
+    # Select numeric columns for spectral analysis
+    available_series = numeric_data.columns
     # Select time series for analysis
     st.subheader("Time Series Selection")
-    available_series = [col for col in data.columns if col != 'dates']  # Exclude non-series columns
     selected_series = st.multiselect(
         "Select Time Series for Analysis",
         available_series,
@@ -707,11 +716,11 @@ def render_spectral_analysis(file_path, detrend=True, analyze_significance=True)
         series_data = data[series_name]
         if detrend:
             if detrend_method == "polynomial":
-                detrended_data = analyzer.detrend_series(data, method=detrend_method, degree=degree)
+                detrended_data = analyzer.detrend_series(numeric_data[series_name], method=detrend_method, degree=degree)
             elif detrend_method == "moving_average":
-                detrended_data = analyzer.detrend_series(data, method=detrend_method, window=window)
+                detrended_data = analyzer.detrend_series(numeric_data[series_name], method=detrend_method, window=window)
             else:
-                detrended_data = analyzer.detrend_series(data, method=detrend_method)
+                detrended_data = analyzer.detrend_series(numeric_data[series_name], method=detrend_method)
         else:
             detrended_data = data
         # Fourier Analysis
@@ -816,13 +825,29 @@ def render_spectral_analysis(file_path, detrend=True, analyze_significance=True)
 
             st.plotly_chart(fig, use_container_width=True)
 
-def render_statistical_forecasting(file_path, date_column=None):
+def render_statistical_forecasting(file_path):
     """Render statistical forecasting section"""
     ts_analyzer = TimeSeriesAnalyzer()
     timeseries_dict = ts_analyzer.analyze_file(file_path)
     data = ts_analyzer.create_timeseries_table()
+    # Preprocess DataFrame
+    exclude_columns = ['dates']  # Exclude 'dates' column
+    numeric_data = filter_numeric_columns(data, exclude_columns=exclude_columns)
+
+    # Select numeric columns for spectral analysis
+    available_series = numeric_data.columns
     st.subheader("Statistical Forecasting")
+    # Time Series Selection
     
+    selected_series = st.multiselect(
+            "Select Time Series for Statistical Forecasting",
+            available_series,
+            default=available_series[:1]
+        )
+        
+    if not selected_series:
+            st.warning("Please select at least one time series for the forecast")
+            return
     # Model selection and parameters
     with st.expander("Model Settings", expanded=True):
         col1, col2 = st.columns(2)
@@ -897,105 +922,107 @@ def render_statistical_forecasting(file_path, date_column=None):
                 'order': (p, d, q)
             }
     
-    # Fit model and generate forecast
-    if st.button("Generate Forecast"):
-        with st.spinner("Fitting model and generating forecast..."):
-            try:
-                forecaster = StatisticalForecaster()
+    # Perform analysis for each selected series
+    for series_name in selected_series:
+        st.subheader(f"Forecast for {series_name}")
+        # Extract series data
+        series_data = data[series_name]
+        
+    
+        # Fit model and generate forecast
+        if st.button("Generate Forecast"):
+            with st.spinner("Fitting model and generating forecast..."):
+                try:
+                    forecaster = StatisticalForecaster()
+                    ts_data = pd.Series(numeric_data[series_name])
                 
-                # Check and prepare data
-                if date_column is not None:
-                    ts_data = pd.Series(data[data.columns[0]].values, index=pd.to_datetime(data[date_column]))
-                else:
-                    ts_data = pd.Series(data)
+                    # Stationarity analysis
+                    stationarity_results = forecaster.analyze_stationarity(ts_data)
                 
-                # Stationarity analysis
-                stationarity_results = forecaster.analyze_stationarity(ts_data)
+                    st.write("### Stationarity Tests")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.write("**ADF Test**")
+                        st.write(f"Statistic: {stationarity_results['adf_test']['statistic']:.4f}")
+                        st.write(f"p-value: {stationarity_results['adf_test']['pvalue']:.4f}")
+                    with col2:
+                        st.write("**KPSS Test**")
+                        st.write(f"Statistic: {stationarity_results['kpss_test']['statistic']:.4f}")
+                        st.write(f"p-value: {stationarity_results['kpss_test']['pvalue']:.4f}")
                 
-                st.write("### Stationarity Tests")
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.write("**ADF Test**")
-                    st.write(f"Statistic: {stationarity_results['adf_test']['statistic']:.4f}")
-                    st.write(f"p-value: {stationarity_results['adf_test']['pvalue']:.4f}")
-                with col2:
-                    st.write("**KPSS Test**")
-                    st.write(f"Statistic: {stationarity_results['kpss_test']['statistic']:.4f}")
-                    st.write(f"p-value: {stationarity_results['kpss_test']['pvalue']:.4f}")
+                    # Fit model and generate forecast
+                    forecaster.fit(ts_data, model_type, **model_params)
+                    forecast_results = forecaster.predict(steps=forecast_steps)
                 
-                # Fit model and generate forecast
-                forecaster.fit(ts_data, model_type, **model_params)
-                forecast_results = forecaster.predict(steps=forecast_steps)
+                    # Plot results
+                    st.write("### Forecast Results")
+                    fig = forecaster.plot_forecast(ts_data, date_index=ts_data.index)
+                    st.plotly_chart(fig, use_container_width=True)
                 
-                # Plot results
-                st.write("### Forecast Results")
-                fig = forecaster.plot_forecast(ts_data, date_index=ts_data.index)
-                st.plotly_chart(fig, use_container_width=True)
+                    # Model diagnostics
+                    st.write("### Model Diagnostics")
                 
-                # Model diagnostics
-                st.write("### Model Diagnostics")
+                    # Plot diagnostic charts
+                    diag_fig = forecaster.plot_diagnostics()
+                    st.plotly_chart(diag_fig, use_container_width=True)
                 
-                # Plot diagnostic charts
-                diag_fig = forecaster.plot_diagnostics()
-                st.plotly_chart(diag_fig, use_container_width=True)
+                    # Statistical tests
+                    diagnostics = forecaster.get_diagnostics()
                 
-                # Statistical tests
-                diagnostics = forecaster.get_diagnostics()
+                    st.write("### Diagnostic Tests")
+                    col1, col2, col3 = st.columns(3)
                 
-                st.write("### Diagnostic Tests")
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.write("**Ljung-Box Test (Autocorrelation)**")
-                    st.write(f"Normality_p_value', {diagnostics['normality_p_value']}")
-                    st.write(f"Skewness: {diagnostics['skewness']}")
-                    st.write(f"Kurtosis: {diagnostics['kurtosis']}")
-                with col2:
-                    st.write("**Ljung-Box Test (Autocorrelation)**")
-                    st.write(f"Statistic: {diagnostics['ljung_box_test']['statistic']:.4f}")
-                    st.write(f"p-value: {diagnostics['ljung_box_test']['pvalue']:.4f}")
+                    with col1:
+                        st.write("**Ljung-Box Test (Autocorrelation)**")
+                        st.write(f"Normality_p_value', {diagnostics['normality_p_value']}")
+                        st.write(f"Skewness: {diagnostics['skewness']}")
+                        st.write(f"Kurtosis: {diagnostics['kurtosis']}")
+                    with col2:
+                        st.write("**Ljung-Box Test (Autocorrelation)**")
+                        st.write(f"Statistic: {diagnostics['ljung_box_test']['statistic']:.4f}")
+                        st.write(f"p-value: {diagnostics['ljung_box_test']['pvalue']:.4f}")
                     
-                    st.write("**Jarque-Bera Test (Normality)**")
-                    st.write(f"Statistic: {diagnostics['jarque_bera_test']['statistic']:.4f}")
-                    st.write(f"p-value: {diagnostics['jarque_bera_test']['pvalue']:.4f}")
+                        st.write("**Jarque-Bera Test (Normality)**")
+                        st.write(f"Statistic: {diagnostics['jarque_bera_test']['statistic']:.4f}")
+                        st.write(f"p-value: {diagnostics['jarque_bera_test']['pvalue']:.4f}")
                 
-                with col3:
-                    st.write("**Heteroskedasticity Test**")
-                    st.write(f"Statistic: {diagnostics['heteroskedasticity_test']['statistic']:.4f}")
-                    st.write(f"p-value: {diagnostics['heteroskedasticity_test']['pvalue']:.4f}")
+                    with col3:
+                        st.write("**Heteroskedasticity Test**")
+                        st.write(f"Statistic: {diagnostics['heteroskedasticity_test']['statistic']:.4f}")
+                        st.write(f"p-value: {diagnostics['heteroskedasticity_test']['pvalue']:.4f}")
                 
-                # Export results
-                if st.button("Export Results"):
-                    # Create DataFrame with results
-                    forecast_df = pd.DataFrame({
-                        'Forecast': forecast_results['forecast'],
-                        'Lower CI': forecast_results.get('lower', None),
-                        'Upper CI': forecast_results.get('upper', None)
-                    })
-                    if date_column is not None:
-                        # Add future dates
-                        last_date = ts_data.index[-1]
-                        future_dates = pd.date_range(
-                            start=last_date + pd.Timedelta(days=1),
-                            periods=forecast_steps,
-                            freq='D'
+                    # Export results
+                    if st.button("Export Results"):
+                        # Create DataFrame with results
+                        forecast_df = pd.DataFrame({
+                            'Forecast': forecast_results['forecast'],
+                            'Lower CI': forecast_results.get('lower', None),
+                            'Upper CI': forecast_results.get('upper', None)
+                        })
+                        if date_column is not None:
+                            # Add future dates
+                            last_date = ts_data.index[-1]
+                            future_dates = pd.date_range(
+                                start=last_date + pd.Timedelta(days=1),
+                                periods=forecast_steps,
+                                freq='D'
+                            )
+                            forecast_df.index = future_dates
+                    
+                        # Convert to CSV
+                        csv = forecast_df.to_csv()
+                    
+                        # Create download button
+                        st.download_button(
+                            label="Download Forecast Results",
+                            data=csv,
+                            file_name="forecast_results.csv",
+                            mime="text/csv"
                         )
-                        forecast_df.index = future_dates
                     
-                    # Convert to CSV
-                    csv = forecast_df.to_csv()
-                    
-                    # Create download button
-                    st.download_button(
-                        label="Download Forecast Results",
-                        data=csv,
-                        file_name="forecast_results.csv",
-                        mime="text/csv"
-                    )
-                    
-            except Exception as e:
-                st.error(f"Error during forecasting: {str(e)}")
-                st.exception(e)
+                except Exception as e:
+                    st.error(f"Error during forecasting: {str(e)}")
+                    st.exception(e)
 
 def render():
     """Main render function for the enhanced analysis interface"""
@@ -1173,27 +1200,8 @@ def render():
                         render_spectral_analysis(selected_file, date_col, value_col)
             
                     with tab3:
-                        # Column selection for statistical forecasting
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            date_col = st.selectbox(
-                                "Select Date Column",
-                                date_cols if date_cols else df.columns,
-                                key="stat_date_col"
-                            )
-                        with col2:
-                            value_col = st.selectbox(
-                                "Select Value Column",
-                                [col for col in numeric_cols if col != date_col],
-                                key="stat_value_col"
-                            )
-            
-                        # Prepare data for forecasting
-                        df[date_col] = pd.to_datetime(df[date_col])
-                        df = df.sort_values(date_col)
-                        ts_data = df[value_col]
-            
-                        render_statistical_forecasting(selected_file, date_col)
+                        
+                        render_statistical_forecasting(selected_file)
             
                     with tab4:
                         # Column selection for ML forecasting

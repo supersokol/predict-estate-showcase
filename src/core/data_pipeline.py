@@ -1,13 +1,10 @@
-from src.registry import process_registry
+# TODO rewrite this logic
 import json
 import os
 from src.core.logger import logger
 from src.core.errors import handle_error
-
-import json
 from utils.process_registry import process_registry
 from utils.model_registry import model_registry
-from src.core.logger import logger
 
 class PipelineExecutor:
     def __init__(self, config_path, max_iterations=100):

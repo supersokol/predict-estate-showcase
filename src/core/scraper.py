@@ -493,8 +493,7 @@ def process_zillow_dataset(dataset_name, datasets, glob_statistics, data_path):
                 logger.info(f"Feature geography: {feature_geography}")
                 for geography in feature_geography:
                     yield process_geography(geography, feature, dataset_name, glob_statistics, data_path)
-                    
-    
+                        
 def process_zillow_datasets(zillow_datasets, db_file = "zillow_datasets.db"):
     # Инициализация глобальной статистики
     glob_statistics = {
