@@ -1,45 +1,74 @@
-# PredictEstateShowcase
+# PredictEstateShowcase: Automating Real Estate Data Analysis and Forecasting
 
-PredictEstateShowcase is an advanced real estate analytics and prediction platform designed to integrate multiple data sources and provide insightful visualizations and forecasts for the housing market. This repository includes tools for data collection, preprocessing, analysis, and visualization, leveraging state-of-the-art technologies for machine learning, geospatial analysis, and pipeline orchestration.
+PredictEstateShowcase is an advanced, interactive real estate analytics and prediction platform designed to integrate multiple data sources and provide insightful visualizations and forecasts for the housing market in the United States. This repository includes tools for data collection, preprocessing, analysis, and visualization, leveraging state-of-the-art technologies for machine learning, geospatial analysis, and pipeline orchestration.
 
-## Features
+## Vision and Idea
+The core idea behind PredictEstateShowcase is to enable seamless automation of data gathering from dynamic web sources in the real estate domain. Real estate trends and analytics rely heavily on timely, accurate, and diverse data, and this platform bridges the gap by automating the collection and processing of such data from trusted sources. 
 
-### Data Sources
-PredictEstateShowcase integrates multiple data sources:
-- **Zillow**: Over 150 datasets with real estate metrics collected through web scraping using BeautifulSoup, Requests, and Selenium.
-- **HUD User**: Links to hundreds of PDF reports, structured by region and state, from the U.S. Department of Housing and Urban Development.
-- **Nominatim (OpenStreetMap)**: Geocoding and reverse geocoding with detailed address metadata using API queries.
+Currently, the platform focuses on two primary sources of real estate data (datasets with real estate metrics collected through web scraping using BeautifulSoup, Requests, and Selenium.):
 
-### Core Components
+- **Zillow**: Data is extracted monthly in CSV format, including updated statistics on prices and a variety of other key metrics. With over 150 datasets available, Zillow serves as a cornerstone for comprehensive real estate analytics.
 
-#### Data Collection and Management
-- **DataSourceRegistry**:
-  - A fully refactored module to manage data sources.
-  - Handles data and local storage operations efficiently.
-  - Supports seamless integration with new sources.
+- **HUD User** (U.S. Department of Housing and Urban Development): The platform downloads and structures state-specific and region-specific reports and publications in PDF format. These hundreds of documents cover diverse topics, trends, and periods, adding depth and reliability to the analysis.
 
-- **PipelineRegistry and PipelineExecutor**:
-  - Refactored for simplified pipeline management.
-  - Enhanced logic for registering and executing data pipelines.
+Additionally integration of more data sources coming soon! Starting with:
 
-- **APIs**:
-  - Unified `/data_sources` endpoint consolidates data-related operations for streamlined API access.
+- **Nominatim (OpenStreetMap)**: Geocoding and reverse geocoding with detailed address metadata using API queries. 
 
-#### Data Processing and Analysis
-- **Preprocessing**:
-  - Data cleaning and transformation using Pandas.
-  - Initial machine learning models implemented with Scikit-Learn.
+- **Realtor.com**: Leading platform for real estate listings in the United States. It provides detailed information about properties for sale and rent.
 
-- **Visualization**:
-  - Interactive visualizations with matplotlib, seaborn, and Streamlit.
+## Features and Capabilities
+The project demonstrates how modern technologies can be applied to a practical problem using real-world data. Its primary goal is to serve as a showcase for understanding and leveraging cutting-edge tools for data-intensive tasks. PredictEstateShowcase can be used as:
 
-#### Documentation
-- Comprehensive guides created using MkDocs.
-- Configuration details expanded for easier deployment and usage.
+- A foundation for building and customizing user-specific solutions.
+- An educational tool for exploring the application of modern technologies in the context of real estate analytics.
+- A portfolio project to showcase technical expertise and familiarity with a variety of tools and technologies.
 
-#### Logging and Testing
-- **Loguru**: Robust logging for all workflows.
-- **pytest**: Partial test coverage for modules, with plans for expansion.
+
+## Key components include:
+
+1. **Automated Data Collection**:
+   - The platform automatically collects and updates real estate data from dynamic sources like Zillow and HUD User.
+   - Monthly updates ensure access to the latest statistics and reports.
+
+2. **Interactive Data Exploration**: (WIP)
+   - With built-in tools for Exploratory Data Analysis (EDA), users can explore and understand data trends quickly.
+   - Data preprocessing pipelines are provided to clean and transform data for further use.
+
+3. **Pipeline and Model Demonstrations**: (WIP)
+   - Demonstrates how to build and execute data processing pipelines for real-world datasets.
+   - Supports the development of predictive models and workflows.
+
+4. **Data Processing and Analysis**: (WIP)
+     - Data cleaning and transformation using Pandas.
+     - Initial machine learning models implemented with Scikit-Learn.
+
+5. **Documentation**:
+   - Comprehensive guides created using MkDocs.
+   - Configuration details expanded for easier deployment and usage.
+
+6. **Logging and Testing**:
+   - **Loguru**: Robust logging for all workflows.
+   - **pytest**: Partial test coverage for modules, with plans for expansion.
+
+7. **Accessible Interfaces**:
+   - The project includes an interactive Streamlit-based user interface that allows users to interact with the data and pipelines intuitively.
+   - APIs are available to programmatically access the core functionalities.
+
+8. **Structured Logging and Monitoring**: (WIP)
+   - The integration of Elasticsearch, Logstash, and Kibana (ELK Stack) demonstrates how to implement centralized logging and monitoring for applications.
+
+9. **Orchestrated Automation**: (WIP)
+   - Apache Airflow is used to automate data updates and pipeline executions, showcasing how workflows can be scheduled and managed efficiently.
+
+10. **Containerized Deployment**: 
+   - The entire project is containerized using Docker, with Kubernetes manifests prepared for scalable deployments.
+
+11. **Dynamic Parsing and Web Integration**:
+   - Added integration with Wikipedia for supplementary data sources.
+   - Work in progress to improve parsing and scraping to make it more universal and flexible. (WIP)
+
+By combining these components, PredictEstateShowcase provides a comprehensive demonstration of how to solve a real-world analytical problem using a combination of data engineering, machine learning, and software development techniques. It is designed not only to address practical use cases but also to serve as a learning resource for professionals and students alike.
 
 ## Technologies Used
 
@@ -57,22 +86,24 @@ PredictEstateShowcase integrates multiple data sources:
 
 ### Infrastructure and Orchestration
 - **Docker**: Containerization.
-- **ZenML**: Experimental pipeline orchestration.
-- **Airflow**: Orchestrating daily data workflows (planned integration).
-- **AWS S3**: Cloud storage.
+- **Kubernetes**: Container control.
+- **Airflow**: Orchestrating daily data workflows. (WIP)
+- **ZenML**: Experimental pipeline orchestration. (planned integration)
+- **AWS S3**: Cloud storage. (planned integration)
 
 ## Getting Started
 
 ### Prerequisites
 1. **Python 3.8+**
-2. **Docker** (optional for containerized deployment)
-3. API keys for Zillow, HUD User, and Nominatim (if applicable)
+2. **Docker** (optional for deployment)
+3. **Kubernetes** (optional for deployment)
 
-### Installation
+### Installation and local run
+
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/PredictEstateShowcase.git
-   cd PredictEstateShowcase
+   git clone https://github.com/supersokol/predict-estate-showcase.git
+   cd predict-estate-showcase
    ```
 
 2. Install dependencies:
@@ -83,9 +114,10 @@ PredictEstateShowcase integrates multiple data sources:
 3. Set up environment variables:
    - Create a `.env` file:
      ```
-     DATABASE_URL=sqlite:///data/database.db
-     ZILLOW_API_KEY=your_key_here
-     NOMINATIM_API_URL=https://nominatim.openstreetmap.org
+     MASTER_CONFIG_PATH=config/master_config.json
+     DATA_PATH=data/
+     DB_PATH=data/db_files/
+     API_URL=http://127.0.0.1:8000
      ```
 
 4. Run the tests with:
@@ -98,23 +130,29 @@ PredictEstateShowcase integrates multiple data sources:
    python src/run_services.py 
    ```
 
-### Usage
+6. Launch MkDocs documentation:
+   ```bash
+   mkdocs serve
+   ```
 
-#### Run the Streamlit Dashboard
+7. Run the Streamlit Dashboard
 Launch the user interface:
 ```bash
 streamlit run src/interfaces/app.py
 ```
 
-#### Access the API
+8. Access the API
 Start the FastAPI server:
 ```bash
 uvicorn src.api.entrypoint:app --reload
 ```
 Visit `http://127.0.0.1:8000/docs` for API documentation.
 
-#### Data Pipeline Execution
-Run data pipelines (coming soon):
+9. Launch using Docker containers and Kubernetes.
+Please see the [`README_KUBERNETES.md`](https://github.com/supersokol/blob/main/README_KUBERNETES.md) file for guidelines.
+
+10. Pipeline Management and Execution
+Create and run data pipelines (coming soon):
 
 
 ## Project Structure
@@ -141,9 +179,6 @@ PredictEstateShowcase/
 │   └── run_services.py      # Script to run core services
 ```
 
-## Contributing
-We welcome contributions! Please see the `CONTRIBUTING.md` file for guidelines.
-
 ## License
 This project is licensed under the MIT License. See the `LICENSE` file for details.
 
@@ -154,5 +189,5 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 - Add orchestration with Airflow.
 
 ## Contact
-For questions or support, contact `your.email@example.com` or create an issue in the repository.
+For questions or support, contact `supersokol777@gmail.com` or create an issue in the repository.
 

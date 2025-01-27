@@ -5,7 +5,6 @@ import os
 def render():
     st.subheader("Processes")
     
-    # Список доступных процессов
     process_options = list(process_registry.registry.keys())
     selected_process = st.selectbox("Select a Process", process_options)
 
@@ -13,11 +12,9 @@ def render():
         process_func = process_registry.registry[selected_process]["func"]
         metadata = process_registry.registry[selected_process]["metadata"]
 
-        # Отображение метаданных
         st.write("**Description:**", metadata.get("description", "No description available"))
         st.write("**Parameters:**", metadata.get("parameters", "No parameters available"))
 
-        # Ввод параметров
         params = {}
         if "parameters" in metadata:
             for param_name, param_meta in metadata["parameters"].items():
@@ -32,7 +29,6 @@ def render():
                 else:
                     params[param_name] = st.text_input(f"{param_name} ({param_desc})")
 
-        # Запуск процесса
         if st.button("Run Process"):
             result = process_func(**params)
             st.write("**Result:**", result)
@@ -40,11 +36,9 @@ def render():
 def render_process_execution():
     st.title("Process Execution")
 
-    # Выбор процесса
     selected_process = st.selectbox("Select Process", list(process_registry.keys()))
     process_func = process_registry[selected_process]
 
-    # Генерация параметров
     st.subheader(f"Parameters for {selected_process}")
     params = {}
     for param, meta in process_func.metadata["parameters"].items():
@@ -55,7 +49,6 @@ def render_process_execution():
         elif meta["type"] == "int":
             params[param] = st.number_input(meta["description"], value=meta["default"])
 
-    # Выполнение процесса
     if st.button("Run Process"):
         result = process_func(**params)
         st.success("Process executed successfully!")

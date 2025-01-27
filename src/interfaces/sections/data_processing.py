@@ -9,7 +9,6 @@ import os
 def render():
     st.title("Data Processing")
 
-    # Выбор источника и процесса
     source_type = st.selectbox("Select Source Type", ["uploaded", "datasets"])
     sources = DataSourceRegistry.list_sources()
     selected_source = st.selectbox("Select a Source", sources)

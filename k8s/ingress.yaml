@@ -1,13 +1,15 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: predict-estate-ingress
+  name: predictestate-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: predict-estate.local
+  - host: predictestate.local
     http:
       paths:
-      - path: /
+      - path: /api
         pathType: Prefix
         backend:
           service:

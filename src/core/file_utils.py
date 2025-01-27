@@ -150,10 +150,6 @@ def _process_file(file_path: str) -> Union[str, Dict[str, Any]]:
         logger.error(f"Error processing file: {file_path}. Error: {e}", exc_info=True)
         raise e
 
-
-
-
-
 def ensure_directory_exists(directory):
     """
     Ensures that a directory exists, creating it if necessary.

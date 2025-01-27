@@ -38,11 +38,13 @@ services:
       context: .
       dockerfile: docker/Dockerfile.airflow
     container_name: predictestate-airflow
+    user: "airflow"  
     ports:
       - "8080:8080"
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://predictestateuser:securepassword@postgres:5432/predictestate
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
     volumes:
       - ./src/workflows:/opt/airflow/dags
       - ./logs/airflow:/opt/airflow/logs
@@ -81,6 +83,7 @@ services:
     ports:
       - "5044:5044"
     volumes:
+      - ./logs:/app/logs
       - ./docker/configs/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
 
   postgres:

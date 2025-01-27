@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: predictestate-config
+data:
+  DATABASE_URL: "postgresql://predictestateuser:securepassword@postgres-service:5432/predictestate"
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://predictestateuser:securepassword@postgres-service:5432/predictestate"

@@ -20,7 +20,6 @@ def feature_analysis(df, context=None):
     numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
     categorical_cols = df.select_dtypes(include=["object"]).columns.tolist()
 
-    # Добавляем метаданные
     metadata = {
         "numeric_features": numeric_cols,
         "categorical_features": categorical_cols,
@@ -29,11 +28,9 @@ def feature_analysis(df, context=None):
     }
     logger.info(f"Feature Analysis Metadata: {metadata}")
 
-    # Применяем внутренние процессы
     df = process_registry.execute("Detect Numeric Features", df)
     df = process_registry.execute("Detect Categorical Features", df)
 
-    # Вызываем LLM для анализа
     summary = call_llm_api(f"Summarize the dataset: {df.describe().to_string()}")
     df["LLM Summary"] = summary
 

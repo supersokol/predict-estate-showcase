@@ -8,7 +8,6 @@ data_registry = DataSourceRegistry()
 def render():
     st.title("Source Management")
 
-    # Добавление нового источника
     st.subheader("Add New Source")
     source_name = st.text_input("Source Name")
     description = st.text_area("Description")

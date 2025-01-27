@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-deployment
+  labels:
+    app: api
 spec:
   replicas: 2
   selector:
@@ -13,7 +15,10 @@ spec:
         app: api
     spec:
       containers:
-      - name: api-container
-        image: predict-estate-api:latest
+      - name: api
+        image: predictestate-api:latest
         ports:
         - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: predictestate-config

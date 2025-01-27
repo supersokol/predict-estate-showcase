@@ -35,7 +35,7 @@ st.sidebar.markdown("[GitHub](https://github.com/supersokol/predict-estate-showc
 st.sidebar.markdown("[Detailed User Guide](http://127.0.0.1:8000/mkdocs/index.html)", unsafe_allow_html=True)
 st.sidebar.markdown("[API Documentation](http://127.0.0.1:8000/docs)", unsafe_allow_html=True)
 
-st.title("PredictStateShowcase")
+st.title("PredictEstateShowcase")
 # Render the selected section
 if section_name in sections:
     try:

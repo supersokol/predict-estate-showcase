@@ -1,4 +1,3 @@
-```toml
 [project]
 name = "PredictEstateShowcase"
 version = "1.0.0"

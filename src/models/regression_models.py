@@ -7,7 +7,6 @@ from src.registry.model_registry import ModelRegistry
 
 model_registry = ModelRegistry()
 
-# Линейная регрессия
 @model_registry.register("Linear Regression", metadata={
     "type": "regression",
     "description": "Fits a linear regression model to the data.",
@@ -19,7 +18,6 @@ def train_linear_regression(X, y, fit_intercept=True):
     model.fit(X, y)
     return model
 
-# Полиномиальная регрессия
 @model_registry.register("Polynomial Regression", metadata={
     "type": "regression",
     "description": "Fits a polynomial regression model to the data.",
