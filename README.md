@@ -1,5 +1,7 @@
 # PredictEstateShowcase: Automating Real Estate Data Analysis and Forecasting
 
+![Demonstration of some EDA capabilities](docs/figures/figure01.png)
+
 PredictEstateShowcase is an advanced, interactive real estate analytics and prediction platform designed to integrate multiple data sources and provide insightful visualizations and forecasts for the housing market in the United States. This repository includes tools for data collection, preprocessing, analysis, and visualization, leveraging state-of-the-art technologies for machine learning, geospatial analysis, and pipeline orchestration.
 
 ## Vision and Idea
@@ -10,6 +12,8 @@ Currently, the platform focuses on two primary sources of real estate data (data
 - **Zillow**: Data is extracted monthly in CSV format, including updated statistics on prices and a variety of other key metrics. With over 150 datasets available, Zillow serves as a cornerstone for comprehensive real estate analytics.
 
 - **HUD User** (U.S. Department of Housing and Urban Development): The platform downloads and structures state-specific and region-specific reports and publications in PDF format. These hundreds of documents cover diverse topics, trends, and periods, adding depth and reliability to the analysis.
+
+![Interactive documentation & more UI](docs/figures/figure02.png)
 
 Additionally integration of more data sources coming soon! Starting with:
 

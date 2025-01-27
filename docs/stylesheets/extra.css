@@ -1,0 +1,21 @@
+/* Change the background color of the documentation */
+.md-container {
+    background-color: #ffe4e1 !important; /* Нежно-розовый фон */
+}
+
+/* Ensure code blocks and inline code have a contrasting background */
+.md-typeset code,
+.md-typeset pre {
+    background-color: #fff8f6 !important; /* Светло-розовый для контраста */
+}
+
+/* Adjust the color of the navigation bar for better harmony */
+.md-header,
+.md-header-nav {
+    background-color: #ffc1cc !important; /* Более насыщенный розовый */
+}
+
+/* Change text color for better readability on a pink background */
+.md-typeset {
+    color: #333 !important; /* Тёмно-серый текст */
+}
