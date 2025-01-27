@@ -1,3 +1,4 @@
+anthropic==0.45.0
 beautifulsoup4==4.12.3
 certifi==2024.12.14
 fastapi==0.115.7
@@ -7,10 +8,12 @@ matplotlib==3.8.2
 mkdocs==1.5.3
 mkdocstrings==0.24.0
 mkdocstrings-python==1.7.5
+mistralai
 numpy==1.26.3
 openai==1.10.0
 pandas==2.1.4
 plotly==5.18.0
+prophet==1.1.6
 pydantic==2.10.6
 pytest==7.4.4
 python-dotenv==1.0.0

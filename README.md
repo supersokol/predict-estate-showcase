@@ -160,7 +160,20 @@ Create and run data pipelines (coming soon):
 PredictEstateShowcase/
 ├── config/                  # Configuration files
 ├── data/                    # Generated and processed data (created by the app)
-├── docker/                  # Docker setup and container configurations
+├── docker/                      # Docker setup and container configurations
+│   ├── Dockerfile.api           # Dockerfile for FastAPI
+│   ├── Dockerfile.streamlit     # Dockerfile for Streamlit
+│   ├── Dockerfile.mkdocs        # Dockerfile for MkDocs
+│   ├── Dockerfile.airflow       # Dockerfile for Airflow
+│   ├── Dockerfile.elk           # Dockerfile for Elasticsearch, Kibana, Logstash
+│   ├── docker-compose.yaml      # Docker Compose configuration
+│   ├── .dockerignore            # Docker ignore file
+│   ├── configs/                 # Additional configuration files for Docker
+│   │   ├── airflow/
+│   │   │   ├── airflow.cfg      # Airflow configuration file
+│   │   │   └── requirements.txt # Airflow dependencies
+│   │   ├── logstash/
+│   │   │   └── logstash.conf   # Logstash configuration
 ├── docs/                    # Documentation files (MkDocs markdown files)
 ├── site/                    # Static files for MkDocs-generated documentation
 ├── logs/                    # Log files (created by the app)
@@ -177,6 +190,17 @@ PredictEstateShowcase/
 │   ├── workflows/           # Workflow and orchestration logic
 │   ├── registry/            # Registries for managing data, pipelines, and configurations
 │   └── run_services.py      # Script to run core services
+├── k8s/                        # Kubernetes manifests
+│   ├── api-deployment.yaml         # Kubernetes deployment for FastAPI
+│   ├── streamlit-deployment.yaml   # Kubernetes deployment for Streamlit
+│   ├── mkdocs-deployment.yaml      # Kubernetes deployment for MkDocs
+│   ├── airflow-deployment.yaml     # Kubernetes deployment for Airflow
+│   ├── postgres-deployment.yaml    # Kubernetes deployment for PostgreSQL
+│   ├── logstash-deployment.yaml    # Kubernetes deployment for Logstash
+│   ├── ingress.yaml                # Ingress configuration for routing
+│   ├── configmap.yaml              # ConfigMap for shared environment variables
+├── requirements.txt            # General Python dependencies
+└── README.md                   # Project documentation and setup guide
 ```
 
 ## License

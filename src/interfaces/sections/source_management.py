@@ -36,10 +36,6 @@ def render():
             file_path = f"data/uploaded/{source_name}.txt"
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(processed_context)
-            data_registry.register_source(
-                source_name,
-                {"description": description, "local_files": {"uploaded": [file_path]}}
-            )
             st.success(f"Source '{source_name}' added successfully!")
         except Exception as e:
             st.error(f"Error processing source: {e}")

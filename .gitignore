@@ -7,6 +7,7 @@ pes_s_env/
 # Downloaded datasets and other data
 data/
 
+notebooks/tests.ipynb
 
 # mkdocs documentation (temporarily removed)
 /site
