@@ -17,22 +17,29 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from typing import Dict, List
 from src.core.logger import logger
+import pywt
+import requests
+import json
+import base64
+from typing import Dict, List, Tuple, Optional
 
-def morlet2(M, w=5.0, s=1.0):
-    """
-    Custom implementation of morlet2 wavelet function.
-    
-    Parameters:
-        M: int - Length of the wavelet.
-        w: float - Frequency of the wavelet.
-        s: float - Scaling factor.
-    
-    Returns:
-        np.ndarray - Morlet wavelet.
-    """
-    t = np.linspace(-M / 2, M / 2, M, endpoint=False)
-    wavelet = np.exp(2j * np.pi * w * t / s) * np.exp(-t**2 / (2 * s**2))
-    return wavelet
+@st.cache_data
+def load_registry_data():
+    """Load data from the registry API"""
+    response = requests.get("http://127.0.0.1:8000/data_sources")
+    data = response.json()
+    return pd.DataFrame(data)
+
+
+def parse_metadata(metadata):
+    """Parse metadata from JSON string or dict"""
+    if isinstance(metadata, dict):
+        return metadata
+    try:
+        return json.loads(metadata)
+    except json.JSONDecodeError:
+        return {}
+
 
 def filter_numeric_columns(df, exclude_columns=None):
     """
@@ -891,7 +898,7 @@ class SpectralAnalyzer:
             'peaks_idx': peaks_idx
         }
     
-    def perform_wavelet(self, data, wavelet='morlet', min_scale=1, max_scale=None):
+    def perform_wavelet(self, data, wavelet='morl', min_scale=1, max_scale=None):
         """
         Perform wavelet transform on time series data.
     
@@ -907,15 +914,8 @@ class SpectralAnalyzer:
         if max_scale is None:
             max_scale = len(data) // 4
             
-        scales = np.arange(min_scale, max_scale)
-        
-        if wavelet == 'morlet':
-            wavelet_function = morlet2
-        else:
-            wavelet_function = signal.ricker
-            
-        # Compute CWT
-        cwt_matrix = signal.cwt(data, wavelet_function, scales)
+        scales = np.arange(min_scale, max_scale + 1)
+        cwt_matrix, freqs = pywt.cwt(data, scales, wavelet)
         
         # Find dominant scales
         scale_powers = np.sum(np.abs(cwt_matrix), axis=1)

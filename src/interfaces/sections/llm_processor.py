@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import pandas as pd
 from typing import Dict, List
 from datetime import datetime
 from src.registry import data_source_registry
@@ -8,7 +9,7 @@ from src.core.logger import logger
 from src.core.file_utils import load_data
 from src.core.integrations.assistants_api_manger import AssistantManager
 import asyncio
-
+from src.core.eda_manger import load_registry_data, parse_metadata, TimeSeriesAnalyzer
 # Model provider configurations
 MODEL_PROVIDERS = load_data('Q:\SANDBOX\PredictEstateShowcase_dev\config\llm_provider_config.json', file_type="json", load_as="json")["providers"]
 
@@ -28,15 +29,72 @@ def render_context_source(index: int, data_sources: List[str]) -> Dict:
     
     if source_type == "csv":
         # Get available CSV files from DataSourceRegistry
-        available_csvs = data_source_registry.get_files_by_type("csv")
-        if available_csvs:
-            source_config["file"] = st.selectbox(
-                "Select CSV file",
-                available_csvs,
-                key=f"csv_{index}"
+        table = load_registry_data()
+    
+        # Additional filters
+        with st.sidebar.expander("Advanced Filters"):
+            # Size filter
+            size_range = st.slider(
+                "File Size (MB)",
+                0.0,
+                max(table["metadata"].apply(
+                    lambda x: parse_metadata(x).get("size_bytes", 0)
+                )) / (1024 * 1024),
+                (0.0, 100.0)
             )
+        
+            # Date filter
+            date_range = st.date_input(
+                "Date Range",
+                value=(
+                    pd.to_datetime(table["timestamp"]).min(),
+                    pd.to_datetime(table["timestamp"]).max()
+                )   
+            )
+        # Apply filters
+        filtered_table = table[
+            (table["file_type"].isin(['dataset'])) &
+            (table["format"].isin(['csv'])) &
+            (table["metadata"].apply(lambda x: 
+                parse_metadata(x).get("size_bytes", 0) / (1024 * 1024)
+            ).between(*size_range)) &
+            (pd.to_datetime(table["timestamp"]).dt.date.between(*date_range))]
+        
+        
+        
+        file_paths = filtered_table["file_path"].tolist()
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            file_paths = filtered_table["file_path"].tolist()
+            source_config["file"] = st.selectbox(
+                "Select File for Analysis",
+                file_paths,
+                key="file_selector"
+            )
+        with col2:
+            sort_by = st.selectbox(
+                "Sort by",
+                ["Name", "Date", "Size"]
+            )
+            if sort_by == "Name":
+                file_paths.sort()
+            elif sort_by == "Date":
+                file_paths.sort(key=lambda x: filtered_table[
+                    filtered_table["file_path"] == x
+                ]["timestamp"].iloc[0])
+            elif sort_by == "Size":
+                file_paths.sort(key=lambda x: parse_metadata(
+                    filtered_table[filtered_table["file_path"] == x]["metadata"].iloc[0]
+                ).get("size_bytes", 0))
+
+            
             if st.checkbox("Preview data", key=f"preview_csv_{index}"):
-                df = data_source_registry.get_table(source_config["file"])
+                # Initialize analyzers
+                ts_analyzer = TimeSeriesAnalyzer()
+        
+                # Get time series data
+                timeseries_dict = ts_analyzer.analyze_file(source_config["file"])
+                df = ts_analyzer.create_timeseries_table()
                 st.dataframe(df.head())
     
     elif source_type == "pdf":

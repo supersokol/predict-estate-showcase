@@ -1,47 +1,20 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from prophet import Prophet
-from statsmodels.tsa.arima.model import ARIMA
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
-from scipy import signal, fft, stats
-import statsmodels.api as sm
-from datetime import datetime, timedelta
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.svm import SVR
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from statsmodels.tsa.seasonal import seasonal_decompose
-import requests
-import json
+
 from fpdf import FPDF
 import io
-import base64
+
 import os
 from typing import Dict, List, Tuple, Optional
 from src.core.eda_manger import TimeSeriesAnalyzer, TimeSeriesRegressor,  StatisticalForecaster, SpectralAnalyzer, filter_numeric_columns
 from src.core.logger import logger
+from src.core.eda_manger import load_registry_data, parse_metadata
 
-@st.cache_data
-def load_registry_data():
-    """Load data from the registry API"""
-    response = requests.get("http://127.0.0.1:8000/data_sources")
-    data = response.json()
-    return pd.DataFrame(data)
-
-def parse_metadata(metadata):
-    """Parse metadata from JSON string or dict"""
-    if isinstance(metadata, dict):
-        return metadata
-    try:
-        return json.loads(metadata)
-    except json.JSONDecodeError:
-        return {}
 
 def download_file(file_path):
     """Read file content from path"""
@@ -700,7 +673,7 @@ def render_spectral_analysis(file_path, detrend=True, analyze_significance=True)
         with col2:
             wavelet_type = st.selectbox(
                 "Wavelet Type",
-                ["morlet", "ricker"]
+                ["morl", "ricker"]
             )
             min_scale = st.number_input("Minimum Scale", 1, 10, 1)
             max_scale = st.number_input(
@@ -803,7 +776,8 @@ def render_spectral_analysis(file_path, detrend=True, analyze_significance=True)
                 "Select Scale",
                 int(min_scale),
                 int(max_scale - 1),
-                int(min_scale)
+                int(min_scale),
+                key="specific_scale_selector"
             )
 
             # Plot time series at selected scale
@@ -863,7 +837,8 @@ def render_statistical_forecasting(file_path):
                 "Forecast Horizon",
                 min_value=1,
                 max_value=365,
-                value=30
+                value=30,
+                key="statistical_forecast_horizon"
             )
     
         # Model-specific parameters

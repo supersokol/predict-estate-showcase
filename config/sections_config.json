@@ -1,14 +1,10 @@
 {
     "sections": {
-        "Overview": "sections.overview",
-        "Pipelines": "sections.pipelines",
-        "Models": "sections.model_controller",
-        "Metaheuristics": "sections.metaheuristics_executor",
-        "Data": "sections.data",
         "EDA": "sections.eda",
+        "Add datasets": "sections.local_store_management",
         "LLM processor": "sections.llm_processor",
         "API Integration": "sections.api_integration",
         "Data Processing": "sections.data_processing",
-        "Local Store Management": "sections.local_store_management"
+        "Data Gathering": "sections.data_gathering"        
     }
 }
